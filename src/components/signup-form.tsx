@@ -33,7 +33,7 @@ export default function SignupForm() {
     }
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/signup.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
