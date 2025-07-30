@@ -43,6 +43,7 @@ export default function PosSystem() {
   const [calculatorInput, setCalculatorInput] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
+  const [products] = useState<Product[]>(PRODUCTS);
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -71,7 +72,7 @@ export default function PosSystem() {
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
   
-  const categories = [...new Set(PRODUCTS.map(p => p.category))];
+  const categories = [...new Set(products.map(p => p.category))];
 
   const handleCalcInput = (value: string) => {
      if (value === 'C') {
@@ -97,7 +98,7 @@ export default function PosSystem() {
   };
 
   const ProductGrid = () => {
-    if (PRODUCTS.length === 0) {
+    if (products.length === 0) {
       return (
          <Alert>
             <PackageOpen className="h-4 w-4" />
@@ -120,7 +121,7 @@ export default function PosSystem() {
            <TabsContent key={cat} value={cat}>
              <ScrollArea className="h-[65vh] lg:h-auto lg:max-h-[calc(100vh-22rem)]">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
-                {PRODUCTS.filter(p => p.category === cat).map((product) => {
+                {products.filter(p => p.category === cat).map((product) => {
                   const Icon = iconMap[product.icon] || Calculator;
                   return (
                     <Button
