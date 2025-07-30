@@ -1,0 +1,93 @@
+'use client';
+import {
+  SidebarProvider,
+  Sidebar,
+  SidebarHeader,
+  SidebarContent,
+  SidebarMenu,
+  SidebarMenuItem,
+  SidebarMenuButton,
+  SidebarFooter,
+  SidebarTrigger,
+  SidebarInset,
+} from '@/components/ui/sidebar';
+import Link from 'next/link';
+import { usePathname } from 'next/navigation';
+import { Gem, LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
+const navItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/risk-analysis', label: 'Risk Analysis', icon: Shield },
+  { href: '/dashboard/fuel-management', label: 'Fuel', icon: Flame },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+];
+
+export default function DashboardLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
+  const pathname = usePathname();
+
+  return (
+    <SidebarProvider>
+      <Sidebar>
+        <SidebarContent>
+          <SidebarHeader>
+            <div className="flex items-center gap-2">
+              <Gem className="size-6 text-primary" />
+              <span className="text-lg font-semibold font-headline">RetailSage</span>
+            </div>
+          </SidebarHeader>
+          <SidebarMenu>
+            {navItems.map((item) => (
+              <SidebarMenuItem key={item.href}>
+                <Link href={item.href} passHref>
+                  <SidebarMenuButton
+                    isActive={pathname === item.href}
+                    tooltip={item.label}
+                  >
+                    <item.icon />
+                    <span>{item.label}</span>
+                  </SidebarMenuButton>
+                </Link>
+              </SidebarMenuItem>
+            ))}
+          </SidebarMenu>
+        </SidebarContent>
+        <SidebarFooter>
+          <div className="flex items-center gap-3 p-2 rounded-md transition-colors">
+             <Avatar>
+                <AvatarImage src="https://placehold.co/40x40.png" data-ai-hint="manager avatar" alt="User" />
+                <AvatarFallback>JD</AvatarFallback>
+              </Avatar>
+              <div className="flex flex-col text-sm group-data-[collapsible=icon]:hidden">
+                  <span className="font-semibold">Jane Doe</span>
+                  <span className="text-muted-foreground">Manager</span>
+              </div>
+          </div>
+          <Link href="/" passHref>
+            <SidebarMenuButton tooltip="Logout">
+              <LogOut />
+              <span>Logout</span>
+            </SidebarMenuButton>
+          </Link>
+        </SidebarFooter>
+      </Sidebar>
+      <SidebarInset>
+        <header className="flex items-center justify-between p-4 border-b">
+          <SidebarTrigger />
+          <h1 className="text-2xl font-bold font-headline capitalize">
+             {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
+          </h1>
+          <Button>New Sale</Button>
+        </header>
+        <main className="p-4 sm:p-6 lg:p-8 bg-background/60 flex-1">
+          {children}
+        </main>
+      </SidebarInset>
+    </SidebarProvider>
+  );
+}
