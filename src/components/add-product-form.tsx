@@ -4,12 +4,11 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Product } from '@/lib/constants';
-import { Loader2, Wand2, ArrowLeft } from 'lucide-react';
+import { Product } from '@/lib/types';
+import { Loader2, Wand2 } from 'lucide-react';
 import { suggestProductDetails } from '@/ai/flows/suggest-product-details';
 import { useToast } from '@/hooks/use-toast';
 import Barcode from 'react-barcode';
@@ -103,18 +102,7 @@ export default function AddProductForm() {
   };
 
   return (
-    <Card className="max-w-2xl mx-auto border-green-500/50">
-      <CardHeader>
-        <div className="flex items-center justify-between">
-            <CardTitle className="text-2xl text-green-400">Add New Product</CardTitle>
-            <Button variant="ghost" size="sm" onClick={() => router.push('/dashboard/inventory')}>
-                <ArrowLeft className="mr-2" />
-                Back to Inventory
-            </Button>
-        </div>
-        <CardDescription>Fill in the details below to add a new product to your inventory. Use the AI assistant to help you with categories and descriptions.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-6">
+    <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Product Name</Label>
           <div className="flex gap-2">
@@ -153,10 +141,14 @@ export default function AddProductForm() {
             <Button variant="link" size="sm" onClick={generateBarcode}>Generate New Barcode</Button>
         </div>
 
-        <Button onClick={handleAddProduct} disabled={isLoading} className="w-full bg-green-600 hover:bg-green-700">
-          {isLoading ? <Loader2 className="animate-spin" /> : 'Save Product'}
-        </Button>
-      </CardContent>
-    </Card>
+        <div className="flex justify-end gap-2">
+           <Button variant="ghost" onClick={() => router.push('/dashboard/inventory')}>
+                Cancel
+            </Button>
+            <Button onClick={handleAddProduct} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+              {isLoading ? <Loader2 className="animate-spin" /> : 'Save Product'}
+            </Button>
+        </div>
+      </div>
   );
 }

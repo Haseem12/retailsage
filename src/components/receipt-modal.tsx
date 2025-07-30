@@ -8,12 +8,7 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import { cn } from '@/lib/utils';
 import Link from 'next/link';
-
-export interface ReceiptItem {
-  name: string;
-  quantity: number;
-  price: number;
-}
+import type { ReceiptItem } from '@/lib/types';
 
 interface ReceiptModalProps {
   isOpen: boolean;

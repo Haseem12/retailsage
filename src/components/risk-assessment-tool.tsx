@@ -8,43 +8,15 @@ import { analyzeRisk, type ActionState } from '@/lib/actions';
 import { AlertCircle, Bot, Loader2, ThumbsUp } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useToast } from '@/hooks/use-toast';
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import { Sale, SpoilageEvent } from '@/lib/types';
 
 const initialState: ActionState = {
   data: null,
   error: null,
 };
-
-const sampleSalesData = JSON.stringify(
-  [
-    { "product": "Apples", "units_sold": 150, "day": "Monday" },
-    { "product": "Milk", "units_sold": 200, "day": "Monday" },
-    { "product": "Apples", "units_sold": 50, "day": "Tuesday" },
-    { "product": "Steak", "units_sold": 20, "day": "Saturday" }
-  ],
-  null,
-  2
-);
-
-const sampleStockLevels = JSON.stringify(
-  [
-    { "product": "Apples", "stock": 20 },
-    { "product": "Milk", "stock": 5 },
-    { "product": "Steak", "stock": 30 }
-  ],
-  null,
-  2
-);
-
-const sampleSpoilageData = JSON.stringify(
-  [
-    { "product": "Apples", "units_spoiled": 15, "reason": "over-ripe" },
-    { "product": "Milk", "units_spoiled": 10, "reason": "expired" }
-  ],
-  null,
-  2
-);
 
 function SubmitButton() {
   const { pending } = useFormStatus();
@@ -59,6 +31,13 @@ function SubmitButton() {
 export default function RiskAssessmentTool() {
   const [state, formAction] = useFormState(analyzeRisk, initialState);
   const { toast } = useToast();
+  const [salesData] = useLocalStorage<Sale[]>('sales', []);
+  const [stockLevels] = useLocalStorage('products', []);
+  const [spoilageData] = useLocalStorage<SpoilageEvent[]>('spoilage', []);
+  
+  const [isClient, setIsClient] = useState(false);
+  useEffect(() => setIsClient(true), []);
+
 
   useEffect(() => {
     if (state.error) {
@@ -69,6 +48,8 @@ export default function RiskAssessmentTool() {
       });
     }
   }, [state.error, toast]);
+  
+  if (!isClient) return null;
 
   return (
     <div className="space-y-8">
@@ -76,7 +57,7 @@ export default function RiskAssessmentTool() {
         <CardHeader>
           <CardTitle>AI-Powered Risk Assessment</CardTitle>
           <CardDescription>
-            Input your sales, stock, and spoilage data in JSON format to receive an AI-driven risk analysis.
+            Input your sales, stock, and spoilage data in JSON format to receive an AI-driven risk analysis. The fields below are pre-filled with the data from your app.
           </CardDescription>
         </CardHeader>
         <form action={formAction}>
@@ -84,15 +65,15 @@ export default function RiskAssessmentTool() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
               <div className="space-y-2">
                 <Label htmlFor="salesData">Sales Data</Label>
-                <Textarea id="salesData" name="salesData" rows={10} defaultValue={sampleSalesData} />
+                <Textarea id="salesData" name="salesData" rows={10} defaultValue={JSON.stringify(salesData, null, 2)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="stockLevels">Stock Levels</Label>
-                <Textarea id="stockLevels" name="stockLevels" rows={10} defaultValue={sampleStockLevels} />
+                <Textarea id="stockLevels" name="stockLevels" rows={10} defaultValue={JSON.stringify(stockLevels.map(({name, stock}) => ({name, stock})), null, 2)} />
               </div>
               <div className="space-y-2">
                 <Label htmlFor="spoilageData">Spoilage Data</Label>
-                <Textarea id="spoilageData" name="spoilageData" rows={10} defaultValue={sampleSpoilageData} />
+                <Textarea id="spoilageData" name="spoilageData" rows={10} defaultValue={JSON.stringify(spoilageData, null, 2)} />
               </div>
             </div>
           </CardContent>

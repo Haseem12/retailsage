@@ -3,7 +3,7 @@
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { type Product } from '@/lib/constants';
+import { type Product } from '@/lib/types';
 import Barcode from 'react-barcode';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';

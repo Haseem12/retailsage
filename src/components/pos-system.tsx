@@ -9,10 +9,10 @@ import {
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Product } from '@/lib/constants';
+import { Product, Sale, ReceiptItem } from '@/lib/types';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import ReceiptModal, { type ReceiptItem } from './receipt-modal';
+import ReceiptModal from './receipt-modal';
 import { Separator } from './ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Badge } from './ui/badge';
@@ -23,13 +23,6 @@ const iconMap: { [key: string]: React.ElementType } = {
 };
 
 type CartItem = Product & { quantity: number };
-
-interface Sale {
-  items: ReceiptItem[];
-  subtotal: number;
-  total: number;
-  date: string;
-}
 
 export default function PosSystem() {
   const [cart, setCart] = useState<CartItem[]>([]);

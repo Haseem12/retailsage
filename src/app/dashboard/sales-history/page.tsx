@@ -3,14 +3,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import type { ReceiptItem } from '@/components/receipt-modal';
-
-interface Sale {
-  items: ReceiptItem[];
-  subtotal: number;
-  total: number;
-  date: string;
-}
+import type { Sale } from '@/lib/types';
 
 export default function SalesHistoryPage() {
   const [sales, setSales] = useState<Sale[]>([]);

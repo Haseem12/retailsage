@@ -3,15 +3,8 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
-import type { ReceiptItem } from '@/components/receipt-modal';
+import type { Sale } from '@/lib/types';
 import SalesChart from '@/components/sales-chart';
-
-interface Sale {
-  items: ReceiptItem[];
-  subtotal: number;
-  total: number;
-  date: string;
-}
 
 interface ProductSale {
   name: string;

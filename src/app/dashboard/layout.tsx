@@ -11,10 +11,12 @@ import {
   SidebarFooter,
   SidebarTrigger,
   SidebarInset,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Shield, Flame, Settings, LogOut, ShoppingCart, BookOpen, BarChart2, DollarSign, Users } from 'lucide-react';
+import { LayoutDashboard, Shield, Flame, Settings, LogOut, ShoppingCart, BookOpen, BarChart2, DollarSign, Users, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
@@ -26,7 +28,15 @@ import { cn } from '@/lib/utils';
 const allNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
   { href: '/dashboard/make-sale', label: 'Make Sale', icon: ShoppingCart, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
-  { href: '/dashboard/inventory', label: 'Inventory', icon: BookOpen, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
+  { 
+    href: '/dashboard/inventory', 
+    label: 'Inventory', 
+    icon: BookOpen, 
+    shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'],
+    subItems: [
+        { href: '/dashboard/inventory/spoilage', label: 'Spoilage', icon: Trash2 },
+    ]
+  },
   { href: '/dashboard/sales-history', label: 'Sales History', icon: BarChart2, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
   { href: '/dashboard/sales-summary', label: 'Sales Summary', icon: DollarSign, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
   { href: '/dashboard/risk-analysis', label: 'Risk Analysis', icon: Shield, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
@@ -70,7 +80,7 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     sessionStorage.removeItem('user-token');
-    localStorage.removeItem('shopType');
+    localStorage.clear();
     router.push('/login');
   };
   
@@ -80,6 +90,10 @@ export default function DashboardLayout({
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
+  }
+
+  const isActive = (href: string) => {
+    return pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
   }
 
   return (
@@ -95,15 +109,37 @@ export default function DashboardLayout({
           <SidebarMenu>
             {navItems.map((item) => (
               <SidebarMenuItem key={item.href}>
-                <Link href={item.href} passHref>
-                  <SidebarMenuButton
-                    isActive={pathname.startsWith(item.href) && (item.href !== '/dashboard' || pathname === '/dashboard')}
-                    tooltip={item.label}
-                  >
-                    <item.icon />
-                    <span>{item.label}</span>
-                  </SidebarMenuButton>
-                </Link>
+                 <SidebarMenuButton
+                  asChild={!item.subItems}
+                  isActive={isActive(item.href)}
+                  tooltip={item.label}
+                 >
+                  {item.subItems ? (
+                    <>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </>
+                  ) : (
+                    <Link href={item.href}>
+                      <item.icon />
+                      <span>{item.label}</span>
+                    </Link>
+                  )}
+                </SidebarMenuButton>
+
+                {item.subItems && (
+                   <SidebarMenuSub>
+                     {item.subItems.map((subItem) => (
+                       <SidebarMenuSubItem key={subItem.href}>
+                         <Link href={subItem.href} passHref>
+                           <SidebarMenuSubButton isActive={pathname === subItem.href}>
+                             {subItem.label}
+                           </SidebarMenuSubButton>
+                         </Link>
+                       </SidebarMenuSubItem>
+                     ))}
+                   </SidebarMenuSub>
+                )}
               </SidebarMenuItem>
             ))}
           </SidebarMenu>

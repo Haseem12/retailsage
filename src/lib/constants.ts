@@ -1,16 +1,4 @@
-
-
-export type Product = {
-  id: number;
-  name: string;
-  price: number;
-  icon: string;
-  category: string;
-  stock: number;
-  barcode?: string;
-  description?: string;
-};
-
+import type { Product } from "./types";
 
 export const PRODUCTS: Product[] = [
   { id: 1, name: "Fresh Apples", price: 2.5, icon: "Apple", category: "Groceries", stock: 100, barcode: "123456789012", description: "Crisp and juicy red apples, perfect for a healthy snack." },

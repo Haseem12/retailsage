@@ -6,14 +6,7 @@ import { TrendingUp, ShoppingCart, Users, Percent } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import ActionButtons from '@/components/action-buttons';
-import type { ReceiptItem } from '@/components/receipt-modal';
-
-interface Sale {
-  items: ReceiptItem[];
-  subtotal: number;
-  total: number;
-  date: string;
-}
+import type { Sale } from '@/lib/types';
 
 export default function DashboardPage() {
   const router = useRouter();
