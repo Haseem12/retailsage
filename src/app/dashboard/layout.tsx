@@ -50,7 +50,14 @@ const allNavItems = [
   { href: '/dashboard/sales-summary', label: 'Sales Summary', icon: DollarSign, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
   { href: '/dashboard/risk-analysis', label: 'Risk Analysis', icon: Shield, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
   { href: '/dashboard/fuel-management', label: 'Fuel', icon: Flame, shopTypes: ['Fuel Station'] },
-  { href: '/dashboard/admin/users', label: 'Users', icon: Users, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
+  { 
+    label: 'Admin',
+    icon: Shield,
+    shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'],
+    subItems: [
+        { href: '/dashboard/admin/users', label: 'Users', icon: Users },
+    ]
+  },
 ];
 
 const mobileNavItems = [
@@ -101,6 +108,7 @@ export default function DashboardLayout({
   }
 
   const isActive = (href: string) => {
+    if (!href) return false;
     return pathname === href || (href !== '/dashboard' && pathname.startsWith(href));
   }
 
@@ -115,11 +123,11 @@ export default function DashboardLayout({
             </div>
           </SidebarHeader>
           <SidebarMenu>
-            {navItems.map((item) => (
-              <SidebarMenuItem key={item.href}>
+            {navItems.map((item, index) => (
+              <SidebarMenuItem key={item.href || item.label || index}>
                  <SidebarMenuButton
                   asChild={!item.subItems}
-                  isActive={isActive(item.href)}
+                  isActive={isActive(item.href as string)}
                   tooltip={item.label}
                  >
                   {item.subItems ? (
@@ -128,7 +136,7 @@ export default function DashboardLayout({
                       <span>{item.label}</span>
                     </>
                   ) : (
-                    <Link href={item.href}>
+                    <Link href={item.href as string}>
                       <item.icon />
                       <span>{item.label}</span>
                     </Link>

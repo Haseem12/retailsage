@@ -25,6 +25,7 @@ interface User {
   shop_type: string | null;
   status: 'Active' | 'Inactive'; // Assuming status is handled client-side or needs a new backend field
   role: 'Admin' | 'User'; // Assuming role is handled client-side or needs a new backend field
+  plan: 'Premium' | 'Freemium';
 }
 
 export default function UserManagement() {
@@ -44,12 +45,13 @@ export default function UserManagement() {
         if (!response.ok) throw new Error(data.message || 'Failed to fetch users');
         
         // Add static status/role for demonstration as backend doesn't provide it
-        const usersWithRoles = (data.users || []).map((user: any) => ({
+        const usersWithDetails = (data.users || []).map((user: any) => ({
           ...user,
           status: user.id % 2 === 0 ? 'Inactive' : 'Active', // Mock status
-          role: user.id === 1 ? 'Admin' : 'User' // Mock role, assuming user 1 is admin
+          role: user.id === 1 ? 'Admin' : 'User', // Mock role, assuming user 1 is admin
+          plan: user.id % 3 === 0 ? 'Freemium' : 'Premium', // Mock plan
         }));
-        setUsers(usersWithRoles);
+        setUsers(usersWithDetails);
 
       } catch (error: any) {
         toast({ variant: 'destructive', title: 'Error fetching users', description: error.message });
@@ -96,13 +98,14 @@ export default function UserManagement() {
                 <TableHead>Shop Type</TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Role</TableHead>
+                <TableHead>Plan</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={6} className="text-center h-24">
+                  <TableCell colSpan={7} className="text-center h-24">
                     <Loader2 className="mx-auto h-8 w-8 animate-spin" />
                   </TableCell>
                 </TableRow>
@@ -122,6 +125,12 @@ export default function UserManagement() {
                     <Badge variant={user.role === 'Admin' ? 'secondary' : 'outline'}
                       className={user.role === 'Admin' ? 'border-yellow-500/50' : ''}>
                       {user.role}
+                    </Badge>
+                  </TableCell>
+                   <TableCell>
+                    <Badge variant={user.plan === 'Premium' ? 'default' : 'outline'}
+                      className={user.plan === 'Premium' ? 'bg-primary/80 text-primary-foreground' : ''}>
+                      {user.plan}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
@@ -161,7 +170,7 @@ export default function UserManagement() {
               ))
               ) : (
                  <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
+                  <TableCell colSpan={7} className="h-24 text-center">
                     No users found.
                   </TableCell>
                 </TableRow>
