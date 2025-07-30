@@ -10,33 +10,29 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import RetailLabLogo from '@/components/retaillab-logo';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
+import { Warehouse, BrainCircuit, Smartphone } from 'lucide-react';
 
 const onboardingSteps = [
   {
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'retail analytics',
+    icon: RetailLabLogo,
     title: 'Welcome to RetailLab',
     description: 'Your all-in-one solution for retail management and AI-powered insights.',
   },
   {
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'inventory management',
+    icon: Warehouse,
     title: 'Smart Inventory',
     description: 'Track stock levels, manage inventory, and reduce spoilage with our intelligent tools.',
   },
   {
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'sales dashboard',
+    icon: BrainCircuit,
     title: 'AI-Driven Analytics',
     description: 'Leverage the power of AI to understand sales trends and identify risks before they happen.',
   },
   {
-    image: 'https://placehold.co/600x400.png',
-    aiHint: 'mobile pointofsale',
+    icon: Smartphone,
     title: 'Point of Sale, Anywhere',
     description: 'A modern, easy-to-use POS system that works on any device.',
   },
@@ -78,22 +74,17 @@ export default function OnboardingPage() {
         
         <Carousel setApi={setApi} className="w-full flex-1">
           <CarouselContent className="h-full">
-            {onboardingSteps.map((step, index) => (
+            {onboardingSteps.map((step, index) => {
+              const Icon = step.icon;
+              return (
               <CarouselItem key={index} className="h-full">
                 <div className="flex flex-col items-center justify-center h-full text-white p-6 gap-4">
-                    <Image
-                    src={step.image}
-                    alt={step.title}
-                    width={600}
-                    height={400}
-                    data-ai-hint={step.aiHint}
-                    className="rounded-lg mb-4 w-4/5 max-w-sm"
-                    />
+                    <Icon className="w-24 h-24 text-primary mb-4" />
                     <h2 className="text-2xl font-bold">{step.title}</h2>
-                    <p className="text-white/80">{step.description}</p>
+                    <p className="text-white/80 max-w-sm">{step.description}</p>
                 </div>
               </CarouselItem>
-            ))}
+            )})}
           </CarouselContent>
           <CarouselPrevious className="text-white" />
           <CarouselNext className="text-white" />
