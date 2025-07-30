@@ -1,3 +1,4 @@
+
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -48,8 +49,14 @@ export default function PosSystem() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
       
-      const availableProducts = data.products || [];
+      const availableProducts = (data.products || []).map((p: any) => ({
+        ...p,
+        price: parseFloat(p.price),
+        stock: parseInt(p.stock, 10),
+      }));
+
       setProducts(availableProducts);
+
       if (availableProducts.length > 0) {
         const initialCategory = availableProducts.find((p: Product) => p.category)?.category || 'pos';
         setActiveTab(initialCategory);
