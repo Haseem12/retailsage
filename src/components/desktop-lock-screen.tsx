@@ -3,7 +3,7 @@
 
 import { Smartphone } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
-import RetailLabLogo from './retaillab-logo';
+import RetailSageLogo from './retailsage-logo';
 import { useEffect, useState } from 'react';
 
 const QRCode = () => {
@@ -36,14 +36,14 @@ export default function DesktopLockScreen() {
             <Card className="w-full max-w-md z-10 text-center shadow-2xl bg-card/80 backdrop-blur-sm">
                 <CardHeader>
                     <div className="mx-auto flex items-center justify-center gap-2 mb-4">
-                        <RetailLabLogo className="w-12 h-12" />
+                        <RetailSageLogo className="w-12 h-12" />
                     </div>
                     <CardTitle className="text-2xl flex items-center justify-center gap-2">
                         <Smartphone />
                         Optimized for Mobile
                     </CardTitle>
                     <CardDescription>
-                        For the best experience, please open RetailLab on your mobile device.
+                        For the best experience, please open RetailSage on your mobile device.
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col items-center gap-4">

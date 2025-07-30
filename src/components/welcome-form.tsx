@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
-import RetailLabLogo from './retaillab-logo';
+import RetailSageLogo from './retailsage-logo';
 import { Label } from './ui/label';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { cn } from '@/lib/utils';
@@ -88,9 +88,9 @@ export default function WelcomeForm() {
     <Card className="w-full max-w-lg shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
          <div className="flex justify-center items-center gap-2 mb-4">
-            <RetailLabLogo className="w-10 h-10" />
+            <RetailSageLogo className="w-10 h-10" />
         </div>
-        <CardTitle>Welcome to RetailLab!</CardTitle>
+        <CardTitle>Welcome to RetailSage!</CardTitle>
         <CardDescription>Let's get your business set up. Tell us a bit about your store.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSubmit}>

@@ -8,15 +8,15 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
-import RetailLabLogo from '@/components/retaillab-logo';
+import RetailSageLogo from '@/components/retailsage-logo';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
 import { Warehouse, BrainCircuit, Smartphone } from 'lucide-react';
 
 const onboardingSteps = [
   {
-    icon: RetailLabLogo,
-    title: 'Welcome to RetailLab',
+    icon: RetailSageLogo,
+    title: 'Welcome to RetailSage',
     description: 'Your all-in-one solution for retail management and AI-powered insights.',
   },
   {
@@ -74,8 +74,8 @@ export default function OnboardingPage() {
               <div className="z-10 flex flex-col text-center w-full h-full p-4">
                   <header className="flex-shrink-0 h-20">
                     <div className="flex items-center justify-center gap-2 my-6">
-                        <RetailLabLogo className="w-10 h-10 text-white" />
-                        <h1 className="text-4xl font-bold font-headline text-white">RetailLab</h1>
+                        <RetailSageLogo className="w-10 h-10 text-white" />
+                        <h1 className="text-4xl font-bold font-headline text-white">RetailSage</h1>
                     </div>
                   </header>
 

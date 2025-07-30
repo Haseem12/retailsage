@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
-import RetailLabLogo from './retaillab-logo';
+import RetailSageLogo from './retailsage-logo';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { cn } from '@/lib/utils';
 
@@ -66,8 +66,8 @@ export default function SignupForm() {
     <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
-            <RetailLabLogo className="w-10 h-10" />
-            <h1 className="text-4xl font-bold font-headline">RetailLab</h1>
+            <RetailSageLogo className="w-10 h-10" />
+            <h1 className="text-4xl font-bold font-headline">RetailSage</h1>
         </div>
         <CardTitle>Create an Account</CardTitle>
         <CardDescription>Join us and get AI-powered retail insights.</CardDescription>

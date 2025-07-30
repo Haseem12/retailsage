@@ -9,7 +9,6 @@ import {
   SidebarMenuItem,
   SidebarMenuButton,
   SidebarFooter,
-  SidebarTrigger,
   SidebarInset,
   SidebarMenuSub,
   SidebarMenuSubButton,
@@ -17,11 +16,11 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Shield, Flame, LogOut, ShoppingCart, BookOpen, BarChart2, DollarSign, Users, Trash2, User } from 'lucide-react';
+import { LayoutDashboard, Shield, Flame, LogOut, ShoppingCart, BookOpen, BarChart2, DollarSign, Users, Trash2, User, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
-import RetailLabLogo from '@/components/retaillab-logo';
+import RetailSageLogo from '@/components/retailsage-logo';
 import { Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -111,8 +110,8 @@ export default function DashboardLayout({
         <SidebarContent>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <RetailLabLogo className="size-7" />
-              <span className="text-xl font-semibold font-headline">RetailLab</span>
+              <RetailSageLogo className="size-7" />
+              <span className="text-xl font-semibold font-headline">RetailSage</span>
             </div>
           </SidebarHeader>
           <SidebarMenu>
@@ -155,12 +154,17 @@ export default function DashboardLayout({
         </SidebarContent>
         <SidebarFooter>
           <p className="text-xs text-muted-foreground p-2 group-data-[collapsible=icon]:hidden">
-            © {new Date().getFullYear()} RetailLab Inc.
+            © {new Date().getFullYear()} RetailSage Inc.
           </p>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="hidden md:flex items-center justify-end p-2 border-b h-14">
+        <header className="flex items-center justify-between p-2 border-b h-14">
+            <div className="flex items-center gap-2 md:hidden">
+                <RetailSageLogo className="size-7" />
+                <span className="text-lg font-semibold font-headline">RetailSage</span>
+            </div>
+            <div className="hidden md:flex"></div>
             <div className="flex items-center gap-4">
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
@@ -182,8 +186,8 @@ export default function DashboardLayout({
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
                         <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
-                            <User className="mr-2 h-4 w-4" />
-                            <span>Profile</span>
+                            <Settings className="mr-2 h-4 w-4" />
+                            <span>Settings</span>
                         </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4" />

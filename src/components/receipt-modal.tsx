@@ -1,7 +1,7 @@
 'use client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import RetailLabLogo from './retaillab-logo';
+import RetailSageLogo from './retailsage-logo';
 import { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -16,7 +16,7 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId }: ReceiptModalProps) {
-  const [businessDetails, setBusinessDetails] = useState({ name: 'RetailLab', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
+  const [businessDetails, setBusinessDetails] = useState({ name: 'RetailSage', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
   const [showDetailsForm, setShowDetailsForm] = useState(false);
   const [isAndroid, setIsAndroid] = useState(false);
   
@@ -25,7 +25,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
 
   useEffect(() => {
     if (isOpen) {
-      const name = localStorage.getItem('businessName') || 'RetailLab';
+      const name = localStorage.getItem('businessName') || 'RetailSage';
       const address = localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA';
       const rcNumber = localStorage.getItem('rcNumber') || '';
       const phoneNumber = localStorage.getItem('phoneNumber') || '';
@@ -98,7 +98,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
       `}</style>
       <div className="print-content">
         <DialogHeader className="text-center items-center">
-          <RetailLabLogo className="w-8 h-8 my-2 print:text-black"/>
+          <RetailSageLogo className="w-8 h-8 my-2 print:text-black"/>
           <DialogTitle className="font-sans text-lg font-bold">{businessDetails.name}</DialogTitle>
           <DialogDescription className="print:text-gray-600">{businessDetails.address}</DialogDescription>
           <div className="text-xs print:text-gray-600">

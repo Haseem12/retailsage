@@ -7,7 +7,7 @@ import { type Product } from '@/lib/types';
 import Barcode from 'react-barcode';
 import { useRef } from 'react';
 import { useReactToPrint } from 'react-to-print';
-import RetailLabLogo from './retaillab-logo';
+import RetailSageLogo from './retailsage-logo';
 
 interface ProductLabelModalProps {
   isOpen: boolean;
@@ -19,8 +19,8 @@ const LabelContent = ({ product, componentRef }: { product: Product, componentRe
     return (
         <div ref={componentRef} className="p-4 border-2 border-dashed border-black rounded-lg bg-white text-black font-sans flex flex-col items-center justify-center text-center">
             <div className="flex items-center gap-2 mb-2">
-              <RetailLabLogo className="w-6 h-6 text-black" />
-              <span className="font-bold text-lg">RetailLab</span>
+              <RetailSageLogo className="w-6 h-6 text-black" />
+              <span className="font-bold text-lg">RetailSage</span>
             </div>
             <h3 className="text-xl font-bold">{product.name}</h3>
             <p className="text-3xl font-extrabold my-2">₦{product.price.toFixed(2)}</p>
