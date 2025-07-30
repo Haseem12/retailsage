@@ -30,47 +30,57 @@ export default function InventoryManagement() {
   const [products, setProducts] = useLocalStorage<Product[]>('products', PRODUCTS);
   const [isClient, setIsClient] = useState(false);
 
-  // Form state for new/edit product
+  // State for Add Product Dialog
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductStock, setNewProductStock] = useState('');
+  const [newProductCategory, setNewProductCategory] = useState('Groceries');
+  const [newProductIcon, setNewProductIcon] = useState('Apple');
+
+  // State for Edit Product Dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  
-  const [productName, setProductName] = useState('');
-  const [productPrice, setProductPrice] = useState('');
-  const [productStock, setProductStock] = useState('');
-  const [productCategory, setProductCategory] = useState('Groceries');
-  const [productIcon, setProductIcon] = useState('Apple');
-
+  const [editProductName, setEditProductName] = useState('');
+  const [editProductPrice, setEditProductPrice] = useState('');
+  const [currentStock, setCurrentStock] = useState('');
   const [additionalStock, setAdditionalStock] = useState('');
+
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
-  const resetForm = () => {
-    setProductName('');
-    setProductPrice('');
-    setProductStock('');
+  const resetAddForm = () => {
+    setNewProductName('');
+    setNewProductPrice('');
+    setNewProductStock('');
+  }
+
+  const resetEditForm = () => {
+    setEditProductName('');
+    setEditProductPrice('');
     setAdditionalStock('');
+    setCurrentStock('');
     setSelectedProduct(null);
   }
 
   const handleAddProduct = () => {
-    if (!productName || !productPrice || !productStock) {
+    if (!newProductName || !newProductPrice || !newProductStock) {
       alert('Please fill in all fields.');
       return;
     }
     const newProduct: Product = {
       id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      name: productName,
-      price: parseFloat(productPrice),
-      stock: parseInt(productStock, 10),
-      category: productCategory,
-      icon: productIcon,
+      name: newProductName,
+      price: parseFloat(newProductPrice),
+      stock: parseInt(newProductStock, 10),
+      category: newProductCategory,
+      icon: newProductIcon,
     };
     setProducts([...products, newProduct]);
     
-    resetForm();
+    resetAddForm();
     setIsAddDialogOpen(false);
   };
 
@@ -81,8 +91,8 @@ export default function InventoryManagement() {
       if (p.id === selectedProduct.id) {
         return {
           ...p,
-          name: productName,
-          price: parseFloat(productPrice),
+          name: editProductName,
+          price: parseFloat(editProductPrice),
           stock: p.stock + (parseInt(additionalStock, 10) || 0)
         }
       }
@@ -90,7 +100,7 @@ export default function InventoryManagement() {
     });
 
     setProducts(updatedProducts);
-    resetForm();
+    resetEditForm();
     setIsEditDialogOpen(false);
   }
 
@@ -102,9 +112,9 @@ export default function InventoryManagement() {
   
   const openEditDialog = (product: Product) => {
     setSelectedProduct(product);
-    setProductName(product.name);
-    setProductPrice(String(product.price));
-    setProductStock(String(product.stock));
+    setEditProductName(product.name);
+    setEditProductPrice(String(product.price));
+    setCurrentStock(String(product.stock));
     setIsEditDialogOpen(true);
   }
 
@@ -113,7 +123,7 @@ export default function InventoryManagement() {
   }
 
   const AddProductDialog = () => (
-    <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => { setIsAddDialogOpen(isOpen); if(!isOpen) resetForm(); }}>
+    <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => { setIsAddDialogOpen(isOpen); if(!isOpen) resetAddForm(); }}>
       <DialogTrigger asChild>
         <Button>
           <PlusCircle className="mr-2" />
@@ -127,15 +137,15 @@ export default function InventoryManagement() {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="name" className="text-right">Name</Label>
-            <Input id="name" value={productName} onChange={e => setProductName(e.target.value)} className="col-span-3" />
+            <Input id="name" value={newProductName} onChange={e => setNewProductName(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="price" className="text-right">Price (₦)</Label>
-            <Input id="price" type="number" value={productPrice} onChange={e => setProductPrice(e.target.value)} className="col-span-3" />
+            <Input id="price" type="number" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="stock" className="text-right">Initial Stock</Label>
-            <Input id="stock" type="number" value={productStock} onChange={e => setProductStock(e.target.value)} className="col-span-3" />
+            <Input id="stock" type="number" value={newProductStock} onChange={e => setNewProductStock(e.target.value)} className="col-span-3" />
           </div>
         </div>
         <DialogFooter>
@@ -147,7 +157,7 @@ export default function InventoryManagement() {
   );
 
   const EditProductDialog = () => (
-     <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => { setIsEditDialogOpen(isOpen); if(!isOpen) resetForm(); }}>
+     <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => { setIsEditDialogOpen(isOpen); if(!isOpen) resetEditForm(); }}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Edit Product / Add Stock</DialogTitle>
@@ -155,15 +165,15 @@ export default function InventoryManagement() {
         <div className="grid gap-4 py-4">
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="edit-name" className="text-right">Name</Label>
-            <Input id="edit-name" value={productName} onChange={e => setProductName(e.target.value)} className="col-span-3" />
+            <Input id="edit-name" value={editProductName} onChange={e => setEditProductName(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="edit-price" className="text-right">Price (₦)</Label>
-            <Input id="edit-price" type="number" value={productPrice} onChange={e => setProductPrice(e.target.value)} className="col-span-3" />
+            <Input id="edit-price" type="number" value={editProductPrice} onChange={e => setEditProductPrice(e.target.value)} className="col-span-3" />
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="current-stock" className="text-right">Current Stock</Label>
-            <Input id="current-stock" type="number" value={productStock} disabled className="col-span-3" />
+            <Input id="current-stock" type="number" value={currentStock} disabled className="col-span-3" />
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="add-stock" className="text-right">Add Stock</Label>
