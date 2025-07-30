@@ -25,6 +25,15 @@ import RetailLabLogo from '@/components/retaillab-logo';
 import { Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
+
 
 const allNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
@@ -43,7 +52,6 @@ const allNavItems = [
   { href: '/dashboard/risk-analysis', label: 'Risk Analysis', icon: Shield, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
   { href: '/dashboard/fuel-management', label: 'Fuel', icon: Flame, shopTypes: ['Fuel Station'] },
   { href: '/dashboard/admin/users', label: 'Users', icon: Users, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
 ];
 
 const mobileNavItems = [
@@ -146,20 +154,9 @@ export default function DashboardLayout({
           </SidebarMenu>
         </SidebarContent>
         <SidebarFooter>
-          <div className="flex items-center gap-3 p-2 rounded-md transition-colors">
-             <Avatar>
-                <AvatarImage src={"https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
-                <AvatarFallback>U</AvatarFallback>
-              </Avatar>
-              <div className="flex flex-col text-sm group-data-[collapsible=icon]:hidden">
-                  <span className="font-semibold">User</span>
-                  <span className="text-muted-foreground">Manager</span>
-              </div>
-          </div>
-          <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
-            <LogOut />
-            <span>Logout</span>
-          </SidebarMenuButton>
+          <p className="text-xs text-muted-foreground p-2 group-data-[collapsible=icon]:hidden">
+            © {new Date().getFullYear()} RetailLab Inc.
+          </p>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
@@ -168,7 +165,43 @@ export default function DashboardLayout({
             <RetailLabLogo className="size-7" />
             <span className="text-lg font-semibold font-headline">RetailLab</span>
           </Link>
+          <SidebarTrigger />
         </header>
+        
+        <header className="hidden md:flex items-center justify-end p-2 border-b h-14">
+            <div className="flex items-center gap-4">
+                <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/settings')}>
+                    <Settings className="size-5" />
+                    <span className="sr-only">Settings</span>
+                </Button>
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                         <Button variant="ghost" className="relative h-8 w-8 rounded-full">
+                            <Avatar className="h-8 w-8">
+                                <AvatarImage src={"https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
+                                <AvatarFallback>U</AvatarFallback>
+                            </Avatar>
+                         </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-56" align="end" forceMount>
+                        <DropdownMenuLabel className="font-normal">
+                            <div className="flex flex-col space-y-1">
+                                <p className="text-sm font-medium leading-none">User</p>
+                                <p className="text-xs leading-none text-muted-foreground">
+                                    manager@example.com
+                                </p>
+                            </div>
+                        </DropdownMenuLabel>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={handleLogout}>
+                            <LogOut className="mr-2 h-4 w-4" />
+                            <span>Log out</span>
+                        </DropdownMenuItem>
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            </div>
+        </header>
+
         <main className="p-4 sm:p-6 lg:p-8 bg-background/60 flex-1 pb-20 md:pb-8">
           {children}
         </main>
