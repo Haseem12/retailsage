@@ -7,10 +7,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import RetailLabLogo from './retaillab-logo';
 import { Label } from './ui/label';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { cn } from '@/lib/utils';
 
 const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
@@ -29,31 +30,25 @@ export default function WelcomeForm() {
   const [shopType, setShopType] = useState('');
   const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
 
   useEffect(() => {
     const storedUserId = sessionStorage.getItem('new-user-id');
     if (!storedUserId) {
-      toast({
-        variant: 'destructive',
-        title: 'Error',
-        description: 'No user ID found. Please sign up again.',
-      });
-      router.push('/signup');
+      setMessage({ type: 'error', text: 'No user ID found. Please sign up again.' });
+      // Redirect after a short delay to allow user to read the message
+      setTimeout(() => router.push('/signup'), 3000);
     } else {
       setUserId(storedUserId);
     }
-  }, [router, toast]);
+  }, [router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setMessage(null); 
     if (!businessName || !shopType || !businessAddress) {
-       toast({
-        variant: 'destructive',
-        title: 'Missing Information',
-        description: 'Please fill out all fields.',
-      });
+       setMessage({ type: 'error', text: 'Please fill out all fields.' });
       return;
     }
 
@@ -73,22 +68,15 @@ export default function WelcomeForm() {
         throw new Error(data.message || 'Failed to save details.');
       }
       
-      // Store shopType for dashboard customization simulation
       localStorage.setItem('shopType', shopType);
       
-      sessionStorage.removeItem('new-user-id'); // Clean up stored ID
+      sessionStorage.removeItem('new-user-id');
 
-      toast({
-        title: 'Setup Complete!',
-        description: 'Your business details have been saved. Please log in.',
-      });
-      router.push('/login');
+      setMessage({ type: 'success', text: 'Your business details have been saved. Redirecting to login...' });
+      setTimeout(() => router.push('/login'), 2000);
+
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Submission Failed',
-        description: error.message || 'An unknown error occurred.',
-      });
+      setMessage({ type: 'error', text: error.message || 'An unknown error occurred.' });
     } finally {
       setIsLoading(false);
     }
@@ -105,6 +93,15 @@ export default function WelcomeForm() {
       </CardHeader>
       <form onSubmit={handleSubmit}>
         <CardContent className="flex flex-col gap-4">
+          {message && (
+            <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className={cn(message.type === 'success' && 'border-green-500/50 text-green-500 dark:border-green-500 [&>svg]:text-green-500')}>
+              {message.type === 'error' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+              <AlertTitle>{message.type === 'error' ? 'Error' : 'Success'}</AlertTitle>
+              <AlertDescription>
+                {message.text}
+              </AlertDescription>
+            </Alert>
+          )}
           <div className="space-y-2">
             <Label htmlFor="businessName">Business Name</Label>
             <Input
