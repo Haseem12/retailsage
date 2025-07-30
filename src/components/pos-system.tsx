@@ -15,6 +15,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import ReceiptModal, { type ReceiptItem } from './receipt-modal';
 import { Separator } from './ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { Badge } from './ui/badge';
+import { cn } from '@/lib/utils';
 
 const iconMap: { [key: string]: React.ElementType } = {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
@@ -37,27 +39,44 @@ export default function PosSystem() {
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState<{items: ReceiptItem[], subtotal: number} | null>(null);
 
-  const [products] = useLocalStorage<Product[]>('products', []);
+  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
   const [sales, setSales] = useLocalStorage<Sale[]>('sales', []);
   const [isClient, setIsClient] = useState(false);
 
   useEffect(() => {
     setIsClient(true);
+    if(products.length > 0) {
+      setActiveTab(products[0].category)
+    }
   }, []);
+  
+  const getProductStock = (productId: number) => {
+    const product = products.find(p => p.id === productId);
+    return product ? product.stock : 0;
+  }
 
   const addToCart = (product: Product) => {
+    if (product.stock <= 0) return;
     setCart((prevCart) => {
       const existingItem = prevCart.find((item) => item.id === product.id);
       if (existingItem) {
-        return prevCart.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
-        );
+        if (existingItem.quantity < product.stock) {
+          return prevCart.map((item) =>
+            item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item
+          );
+        }
+        return prevCart; // Don't add more than available in stock
       }
       return [...prevCart, { ...product, quantity: 1 }];
     });
   };
 
   const updateQuantity = (productId: number, newQuantity: number) => {
+    const stock = getProductStock(productId);
+    if (newQuantity > stock) {
+      newQuantity = stock; // Cap quantity at stock level
+    }
+    
     setCart((prevCart) => {
       if (newQuantity <= 0) {
         return prevCart.filter((item) => item.id !== productId);
@@ -91,6 +110,16 @@ export default function PosSystem() {
 
   const handlePay = () => {
     if (cart.length === 0) return;
+
+    // Update stock levels
+    const updatedProducts = products.map(p => {
+      const cartItem = cart.find(item => item.id === p.id);
+      if (cartItem) {
+        return { ...p, stock: p.stock - cartItem.quantity };
+      }
+      return p;
+    });
+    setProducts(updatedProducts);
 
     const newSale: Sale = {
       items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
@@ -127,7 +156,7 @@ export default function PosSystem() {
       )
     }
     return (
-      <Tabs defaultValue={categories[0] || ''} className="w-full">
+      <Tabs defaultValue={categories[0] || ''} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           {categories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
         </TabsList>
@@ -137,14 +166,17 @@ export default function PosSystem() {
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
                 {products.filter(p => p.category === cat).map((product) => {
                   const Icon = iconMap[product.icon] || PackageOpen;
+                  const isOutOfStock = product.stock <= 0;
                   return (
                     <Button
                       key={product.id}
                       variant="outline"
-                      className="h-28 flex flex-col gap-2 p-2 justify-center"
+                      className="h-28 flex flex-col gap-1 p-2 justify-center relative"
                       onClick={() => addToCart(product)}
+                      disabled={isOutOfStock}
                     >
-                      <Icon className="w-8 h-8 text-primary" />
+                      {isOutOfStock && <Badge variant="destructive" className="absolute -top-2 -right-2">Out of Stock</Badge>}
+                      <Icon className={cn("w-8 h-8 text-primary", isOutOfStock && "opacity-50")} />
                       <span className="text-xs text-center break-words">{product.name}</span>
                       <span className="text-xs font-bold">₦{product.price.toFixed(2)}</span>
                     </Button>
@@ -179,13 +211,13 @@ export default function PosSystem() {
           <CardHeader>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="pos">Point of Sale</TabsTrigger>
+                <TabsTrigger value="pos" disabled={products.length === 0}>Point of Sale</TabsTrigger>
                 <TabsTrigger value="calc">Calculator</TabsTrigger>
               </TabsList>
             </Tabs>
           </CardHeader>
           <CardContent>
-            {activeTab === 'pos' ? <ProductGrid /> : <CalculatorTab />}
+            {activeTab === 'calc' ? <CalculatorTab /> : <ProductGrid />}
           </CardContent>
         </Card>
       </div>

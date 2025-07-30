@@ -69,6 +69,8 @@ export default function WelcomeForm() {
       }
       
       localStorage.setItem('shopType', shopType);
+      localStorage.setItem('businessName', businessName);
+      localStorage.setItem('businessAddress', businessAddress);
       
       sessionStorage.removeItem('new-user-id');
 

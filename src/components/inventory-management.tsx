@@ -33,6 +33,7 @@ export default function InventoryManagement() {
   // Form state for new product
   const [newProductName, setNewProductName] = useState('');
   const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductStock, setNewProductStock] = useState('');
   const [newProductCategory, setNewProductCategory] = useState('Groceries');
   const [newProductIcon, setNewProductIcon] = useState('Apple');
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -42,7 +43,7 @@ export default function InventoryManagement() {
   }, []);
 
   const handleAddProduct = () => {
-    if (!newProductName || !newProductPrice) {
+    if (!newProductName || !newProductPrice || !newProductStock) {
       alert('Please fill in all fields.');
       return;
     }
@@ -50,6 +51,7 @@ export default function InventoryManagement() {
       id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
       name: newProductName,
       price: parseFloat(newProductPrice),
+      stock: parseInt(newProductStock, 10),
       category: newProductCategory,
       icon: newProductIcon,
     };
@@ -58,6 +60,7 @@ export default function InventoryManagement() {
     // Reset form and close dialog
     setNewProductName('');
     setNewProductPrice('');
+    setNewProductStock('');
     setIsAddDialogOpen(false);
   };
 
@@ -98,6 +101,10 @@ export default function InventoryManagement() {
                 <Label htmlFor="price" className="text-right">Price (₦)</Label>
                 <Input id="price" type="number" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} className="col-span-3" />
               </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="stock" className="text-right">Stock</Label>
+                <Input id="stock" type="number" value={newProductStock} onChange={e => setNewProductStock(e.target.value)} className="col-span-3" />
+              </div>
             </div>
             <DialogFooter>
               <DialogClose asChild>
@@ -115,6 +122,7 @@ export default function InventoryManagement() {
               <TableRow>
                 <TableHead>Product</TableHead>
                 <TableHead>Category</TableHead>
+                <TableHead>Stock</TableHead>
                 <TableHead className="text-right">Price</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
@@ -125,6 +133,7 @@ export default function InventoryManagement() {
                   <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
+                    <TableCell>{product.stock}</TableCell>
                     <TableCell className="text-right">₦{product.price.toFixed(2)}</TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
@@ -153,7 +162,7 @@ export default function InventoryManagement() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={4} className="h-24 text-center">
+                  <TableCell colSpan={5} className="h-24 text-center">
                     No products found.
                   </TableCell>
                 </TableRow>

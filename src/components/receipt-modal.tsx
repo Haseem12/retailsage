@@ -3,6 +3,7 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import RetailLabLogo from './retaillab-logo';
+import { useEffect, useState } from 'react';
 
 export interface ReceiptItem {
   name: string;
@@ -18,6 +19,18 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ isOpen, onClose, items, subtotal }: ReceiptModalProps) {
+  const [businessDetails, setBusinessDetails] = useState({ name: 'RetailLab', address: '123 Market St, Anytown, USA' });
+  
+  useEffect(() => {
+    if (isOpen) {
+      const name = localStorage.getItem('businessName');
+      const address = localStorage.getItem('businessAddress');
+      if (name && address) {
+        setBusinessDetails({ name, address });
+      }
+    }
+  }, [isOpen]);
+
   const tax = subtotal * 0.08;
   const total = subtotal + tax;
   const date = new Date();
@@ -33,9 +46,12 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
         <div className="print-content">
           <DialogHeader className="text-center items-center">
             <RetailLabLogo className="w-8 h-8 my-2 print:text-black"/>
-            <DialogTitle className="font-headline text-lg">RetailLab</DialogTitle>
-            <DialogDescription className="print:text-gray-600">123 Market St, Anytown, USA</DialogDescription>
-            <p className="print:text-gray-600">{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
+            <DialogTitle className="font-sans text-lg font-bold">{businessDetails.name}</DialogTitle>
+            <DialogDescription className="print:text-gray-600">{businessDetails.address}</DialogDescription>
+            <div className="text-xs print:text-gray-600">
+              <p>RC: 123456 | Tel: 080-1234-5678</p>
+              <p>{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
+            </div>
           </DialogHeader>
           <div className="border-t border-b border-dashed py-2 my-2 space-y-1">
             {items.map((item) => (
