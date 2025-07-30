@@ -46,7 +46,7 @@ export default function PosSystem() {
     setIsClient(true);
     if(products.length > 0) {
       const initialCategory = products.find(p => p.category)?.category || 'pos';
-      setActiveTab(initialCategory !== 'pos' ? initialCategory : (products[0]?.category || 'pos'));
+      setActiveTab(initialCategory);
     }
   }, [products]);
   
@@ -90,13 +90,14 @@ export default function PosSystem() {
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const total = subtotal;
   
-  const categories = [...new Set(products.map(p => p.category))];
+  const categories = ['calc', ...new Set(products.map(p => p.category))];
 
   const handleCalcInput = (value: string) => {
      if (value === 'C') {
       setCalculatorInput('');
     } else if (value === '=') {
       try {
+        // Using a safer evaluation method is recommended for production apps
         const result = eval(calculatorInput.replace(/[^-()\d/*+.]/g, ''));
         setCalculatorInput(result.toString());
       } catch (error) {
@@ -169,12 +170,15 @@ export default function PosSystem() {
           </Alert>
       )
     }
+    const productCategories = [...new Set(products.map(p => p.category))];
+
     return (
-      <Tabs defaultValue={categories[0] || ''} value={activeTab} onValueChange={setActiveTab} className="w-full">
+      <Tabs defaultValue={productCategories[0] || ''} value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          {categories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
+          <TabsTrigger value="calc"><Calculator className="w-4 h-4 mr-1" /> Calculator</TabsTrigger>
+          {productCategories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
         </TabsList>
-        {categories.map(cat => (
+        {productCategories.map(cat => (
            <TabsContent key={cat} value={cat}>
              <ScrollArea className="h-[calc(100vh-28rem)]">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
@@ -200,6 +204,9 @@ export default function PosSystem() {
              </ScrollArea>
           </TabsContent>
         ))}
+         <TabsContent value="calc">
+          <CalculatorTab />
+        </TabsContent>
       </Tabs>
     );
   }
@@ -219,17 +226,17 @@ export default function PosSystem() {
   );
 
   return (
-    <div className="grid grid-cols-1 gap-8 items-start">
-      <Card>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <Card className="lg:col-span-2">
         <CardHeader>
             <CardTitle>Point of Sale</CardTitle>
         </CardHeader>
         <CardContent>
-             {activeTab === 'calc' ? <CalculatorTab /> : <ProductGrid />}
+            <ProductGrid />
         </CardContent>
       </Card>
       
-      <div className="xl:col-span-1">
+      <div className="lg:col-span-1">
         <Card>
           <CardHeader>
             <CardTitle>Current Order</CardTitle>
