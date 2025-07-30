@@ -1,3 +1,4 @@
+
 'use client';
 import { useState } from 'react';
 import {
@@ -63,8 +64,6 @@ export default function PosSystem() {
   };
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
   
   const categories = [...new Set(PRODUCTS.map(p => p.category))];
 
@@ -98,8 +97,8 @@ export default function PosSystem() {
       </TabsList>
       {categories.map(cat => (
          <TabsContent key={cat} value={cat}>
-           <ScrollArea className="h-96">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 p-1">
+           <ScrollArea className="h-[50vh]">
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
               {PRODUCTS.filter(p => p.category === cat).map((product) => {
                 const Icon = iconMap[product.icon] || Calculator;
                 return (
@@ -111,7 +110,7 @@ export default function PosSystem() {
                   >
                     <Icon className="w-8 h-8 text-primary" />
                     <span className="text-xs text-center break-words">{product.name}</span>
-                    <span className="text-xs font-bold">${product.price.toFixed(2)}</span>
+                    <span className="text-xs font-bold">₦{product.price.toFixed(2)}</span>
                   </Button>
                 );
               })}
@@ -137,8 +136,8 @@ export default function PosSystem() {
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-      <Card className="lg:col-span-2">
+    <>
+      <Card>
         <CardHeader>
            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-2">
@@ -152,61 +151,12 @@ export default function PosSystem() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Current Order</CardTitle>
-        </CardHeader>
-        <CardContent className="flex flex-col h-[calc(100%-4rem)]">
-          <ScrollArea className="flex-grow">
-            {cart.length === 0 ? (
-              <p className="text-muted-foreground text-center py-10">No items in cart</p>
-            ) : (
-              <div className="space-y-4">
-                {cart.map((item) => (
-                  <div key={item.id} className="flex items-center gap-4">
-                    <div className="flex-grow">
-                      <p className="font-medium">{item.name}</p>
-                      <p className="text-sm text-muted-foreground">${item.price.toFixed(2)}</p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-3 w-3" /></Button>
-                      <span>{item.quantity}</span>
-                      <Button size="icon" variant="outline" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-3 w-3" /></Button>
-                    </div>
-                    <p className="w-16 text-right font-semibold">${(item.price * item.quantity).toFixed(2)}</p>
-                    <Button size="icon" variant="ghost" className="h-6 w-6 text-destructive" onClick={() => updateQuantity(item.id, 0)}><Trash2 className="h-4 w-4" /></Button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </ScrollArea>
-          <div className="mt-auto pt-4 border-t">
-            <div className="space-y-2 text-sm">
-              <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>${subtotal.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between">
-                <span>Taxes (8%)</span>
-                <span>${tax.toFixed(2)}</span>
-              </div>
-              <div className="flex justify-between font-bold text-lg">
-                <span>Total</span>
-                <span>${total.toFixed(2)}</span>
-              </div>
-            </div>
-            <Button className="w-full mt-4 bg-accent text-accent-foreground hover:bg-accent/90" size="lg" onClick={handlePay} disabled={cart.length === 0}>
-              Pay Now
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
       <ReceiptModal 
         isOpen={showReceipt} 
         onClose={() => setShowReceipt(false)} 
         items={receiptItems}
         subtotal={receiptItems.reduce((acc, item) => acc + item.price * item.quantity, 0)}
       />
-    </div>
+    </>
   );
 }
