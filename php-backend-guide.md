@@ -14,12 +14,13 @@ You will need a web server (like Apache or Nginx) with PHP and a MySQL database.
 Organize your backend files in a directory structure like this on your server:
 
 ```
-/retaillab/api
-├── /auth
-│   ├── config.php
-│   ├── login.php
-│   └── signup.php
-└── business-details.php 
+/retaillab
+├── /api
+│   ├── /auth
+│   │   ├── config.php
+│   │   ├── login.php
+│   │   └── signup.php
+│   └── business-details.php 
 ```
 
 ## 2. Database Setup
@@ -52,11 +53,24 @@ CREATE TABLE business_details (
 
 ## 3. Configuration File (`/api/auth/config.php`)
 
-Create a `config.php` file to securely store your database connection details. This file will be included by all other scripts.
+Create a `config.php` file to securely store your database connection details and manage CORS headers. This file will be included by all other scripts.
 
 ```php
 <?php
 // /api/auth/config.php
+
+// Set headers for CORS and JSON response *before any output*
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Content-Type: application/json; charset=UTF-8");
+
+// Handle preflight OPTIONS request
+if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
+    http_response_code(204); // No Content
+    exit();
+}
+
 
 define('DB_SERVER', 'localhost');
 define('DB_USERNAME', 'your_db_username');
@@ -69,25 +83,10 @@ $link = mysqli_connect(DB_SERVER, DB_USERNAME, DB_PASSWORD, DB_NAME);
 // Check connection
 if($link === false){
     // In a real app, you would log this error, not expose it.
-    die("ERROR: Could not connect. " . mysqli_connect_error());
+    http_response_code(500);
+    echo json_encode(["message" => "ERROR: Could not connect to database."]);
+    exit();
 }
-
-// Set headers for CORS and JSON response
-function set_headers() {
-    header("Access-Control-Allow-Origin: *");
-    header("Content-Type: application/json; charset=UTF-8");
-    header("Access-Control-Allow-Methods: POST, GET, OPTIONS");
-    header("Access-Control-Max-Age: 3600");
-    header("Access-Control-Allow-Headers: Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With");
-}
-
-// Handle preflight OPTIONS request
-if ($_SERVER['REQUEST_METHOD'] == 'OPTIONS') {
-    set_headers();
-    exit(0);
-}
-
-set_headers();
 
 ?>
 ```
@@ -293,4 +292,4 @@ mysqli_close($link);
 3.  **Create the database tables** using the SQL queries provided.
 4.  **Test the endpoints** using your frontend application. The signup flow, welcome form, and login should now work with your PHP backend.
 
-This guide should give you a solid foundation for your authentication and business setup system. Let me know if you have any questions about the frontend code!
+This updated guide should help resolve the CORS error and provide a solid foundation for your authentication and business setup system. Please ensure you replace the placeholder database credentials in `config.php` with your actual ones.
