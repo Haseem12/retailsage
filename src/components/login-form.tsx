@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import AgriLabLogo from './agrilab-logo';
+import RetailLabLogo from './retaillab-logo';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -26,7 +26,7 @@ export default function LoginForm() {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Login Successful',
-        description: 'Welcome back to AgriLab!',
+        description: 'Welcome back to RetailLab!',
       });
       router.push('/dashboard');
     } catch (error: any) {
@@ -44,8 +44,8 @@ export default function LoginForm() {
     <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
-            <AgriLabLogo className="w-10 h-10" />
-            <h1 className="text-4xl font-bold font-headline">AgriLab</h1>
+            <RetailLabLogo className="w-10 h-10" />
+            <h1 className="text-4xl font-bold font-headline">RetailLab</h1>
         </div>
         <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
       </CardHeader>

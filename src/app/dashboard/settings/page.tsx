@@ -7,7 +7,7 @@ export default function SettingsPage() {
       <Card className="bg-card/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Subscription Plan</CardTitle>
-          <CardDescription>Manage your AgriLab subscription plan and features.</CardDescription>
+          <CardDescription>Manage your RetailLab subscription plan and features.</CardDescription>
         </CardHeader>
         <CardContent>
           <SubscriptionTiers />

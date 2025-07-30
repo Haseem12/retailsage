@@ -3,8 +3,8 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'AgriLab',
-  description: 'AI-powered agricultural insights and management.',
+  title: 'RetailLab',
+  description: 'AI-powered retail insights and management.',
 };
 
 export default function RootLayout({

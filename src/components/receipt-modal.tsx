@@ -1,7 +1,7 @@
 'use client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import AgriLabLogo from './agrilab-logo';
+import RetailLabLogo from './retaillab-logo';
 
 export interface ReceiptItem {
   name: string;
@@ -25,8 +25,8 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-sm font-mono text-sm bg-card/90 backdrop-blur-sm">
         <DialogHeader className="text-center items-center">
-          <AgriLabLogo className="w-8 h-8 my-2"/>
-          <DialogTitle className="font-headline text-lg">AgriLab</DialogTitle>
+          <RetailLabLogo className="w-8 h-8 my-2"/>
+          <DialogTitle className="font-headline text-lg">RetailLab</DialogTitle>
           <DialogDescription>123 Market St, Anytown, USA</DialogDescription>
           <p>{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
         </DialogHeader>

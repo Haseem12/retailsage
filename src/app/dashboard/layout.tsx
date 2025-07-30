@@ -20,7 +20,8 @@ import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useEffect } from 'react';
-import AgriLabLogo from '@/components/agrilab-logo';
+import RetailLabLogo from '@/components/retaillab-logo';
+import { Loader2 } from 'lucide-react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -64,8 +65,8 @@ export default function DashboardLayout({
         <SidebarContent>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <AgriLabLogo className="size-7" />
-              <span className="text-xl font-semibold font-headline">AgriLab</span>
+              <RetailLabLogo className="size-7" />
+              <span className="text-xl font-semibold font-headline">RetailLab</span>
             </div>
           </SidebarHeader>
           <SidebarMenu>
@@ -116,4 +117,3 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
-import { Loader2 } from 'lucide-react';

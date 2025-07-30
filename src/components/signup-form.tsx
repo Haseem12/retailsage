@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
-import AgriLabLogo from './agrilab-logo';
+import RetailLabLogo from './retaillab-logo';
 
 export default function SignupForm() {
   const [email, setEmail] = useState('');
@@ -35,7 +35,7 @@ export default function SignupForm() {
       await createUserWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Account Created',
-        description: 'Welcome to AgriLab! Please log in.',
+        description: 'Welcome to RetailLab! Please log in.',
       });
       router.push('/');
     } catch (error: any) {
@@ -53,11 +53,11 @@ export default function SignupForm() {
     <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
-            <AgriLabLogo className="w-10 h-10" />
-            <h1 className="text-4xl font-bold font-headline">AgriLab</h1>
+            <RetailLabLogo className="w-10 h-10" />
+            <h1 className="text-4xl font-bold font-headline">RetailLab</h1>
         </div>
         <CardTitle>Create an Account</CardTitle>
-        <CardDescription>Join us and get AI-powered agricultural insights.</CardDescription>
+        <CardDescription>Join us and get AI-powered retail insights.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSignup}>
         <CardContent className="flex flex-col gap-4">
