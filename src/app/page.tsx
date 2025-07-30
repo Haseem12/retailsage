@@ -86,7 +86,7 @@ export default function OnboardingPage() {
                   </main>
                   
                   <footer className="flex-shrink-0 h-28">
-                    <div className="flex flex-col items-center justify-end w-full max-w-md gap-4 py-4 h-full">
+                    <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto gap-4 py-4 h-full">
                       <div className="flex items-center gap-2 mb-4">
                           {onboardingSteps.map((_, i) => (
                             <div
