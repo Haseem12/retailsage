@@ -71,41 +71,45 @@ export default function OnboardingPage() {
             const Icon = step.icon;
             return (
             <CarouselItem key={index} className="h-full">
-              <div className="z-10 flex flex-col items-center text-center w-full h-full p-4">
-                  <div className="flex items-center gap-2 my-6">
-                      <RetailLabLogo className="w-10 h-10 text-white" />
-                      <h1 className="text-4xl font-bold font-headline text-white">RetailLab</h1>
-                  </div>
+              <div className="z-10 flex flex-col text-center w-full h-full p-4">
+                  <header className="flex-shrink-0">
+                    <div className="flex items-center justify-center gap-2 my-6">
+                        <RetailLabLogo className="w-10 h-10 text-white" />
+                        <h1 className="text-4xl font-bold font-headline text-white">RetailLab</h1>
+                    </div>
+                  </header>
 
-                  <div className="flex flex-col items-center justify-center flex-1 text-white p-6 gap-4">
+                  <main className="flex flex-col items-center justify-center flex-1 text-white p-6 gap-4">
                       <Icon className="w-24 h-24 text-primary mb-4" />
                       <h2 className="text-2xl font-bold">{step.title}</h2>
                       <p className="text-white/80 max-w-sm">{step.description}</p>
-                  </div>
+                  </main>
                   
-                  <div className="flex flex-col items-center justify-end w-full max-w-md gap-4 py-4 h-28">
-                    <div className="flex items-center gap-2 mb-4">
-                        {onboardingSteps.map((_, i) => (
-                          <div
-                            key={i}
-                            className={cn(
-                              'h-2 w-2 rounded-full bg-white/50 transition-all',
-                              i === current && 'w-4 bg-white'
-                            )}
-                          />
-                        ))}
+                  <footer className="flex-shrink-0 h-28">
+                    <div className="flex flex-col items-center justify-end w-full max-w-md gap-4 py-4 h-full">
+                      <div className="flex items-center gap-2 mb-4">
+                          {onboardingSteps.map((_, i) => (
+                            <div
+                              key={i}
+                              className={cn(
+                                'h-2 w-2 rounded-full bg-white/50 transition-all',
+                                i === current && 'w-4 bg-white'
+                              )}
+                            />
+                          ))}
+                      </div>
+                      {current === onboardingSteps.length - 1 && (
+                          <div className="flex flex-col w-full gap-2 animate-in fade-in duration-500">
+                            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                                <Link href="/signup">Create an Account</Link>
+                            </Button>
+                            <Button asChild size="lg" variant="outline">
+                                <Link href="/login">Login</Link>
+                            </Button>
+                          </div>
+                      )}
                     </div>
-                    {current === onboardingSteps.length - 1 && (
-                        <div className="flex flex-col w-full gap-2 animate-in fade-in duration-500">
-                          <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                              <Link href="/signup">Create an Account</Link>
-                          </Button>
-                          <Button asChild size="lg" variant="outline">
-                              <Link href="/login">Login</Link>
-                          </Button>
-                        </div>
-                    )}
-                  </div>
+                  </footer>
               </div>
             </CarouselItem>
           )})}
