@@ -2,38 +2,13 @@
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
-import { useIsMobile } from '@/hooks/use-mobile';
-import DesktopLockScreen from '@/components/desktop-lock-screen';
-import React, { useEffect, useState } from 'react';
+import AppContent from '@/components/app-content';
 
 // This metadata is still useful for SEO and mobile browser tabs.
 export const metadata: Metadata = {
   title: 'RetailLab',
   description: 'AI-powered retail insights and management.',
 };
-
-function AppContent({ children }: { children: React.ReactNode }) {
-  'use client';
-
-  const isMobile = useIsMobile();
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
-  if (!isClient) {
-    // Render nothing or a loading state on the server to avoid hydration mismatch
-    return null; 
-  }
-
-  if (!isMobile) {
-    return <DesktopLockScreen />;
-  }
-
-  return <>{children}</>;
-}
-
 
 export default function RootLayout({
   children,
