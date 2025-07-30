@@ -3,9 +3,9 @@
 This guide provides the necessary PHP code and database setup to create the authentication and business setup backend for your RetailLab application.
 
 The frontend sends `POST` requests with a JSON body to the following endpoints:
-- **/api/auth/signup**
-- **/api/auth/login**
-- **/api/business-details**
+- **/api/auth/signup.php**
+- **/api/auth/login.php**
+- **/api/business-details.php**
 
 You will need a web server (like Apache or Nginx) with PHP and a MySQL database.
 
@@ -14,7 +14,7 @@ You will need a web server (like Apache or Nginx) with PHP and a MySQL database.
 Organize your backend files in a directory structure like this on your server:
 
 ```
-/api
+/retaillab/api
 ├── /auth
 │   ├── config.php
 │   ├── login.php
@@ -162,7 +162,7 @@ mysqli_close($link);
 
 ## 5. Login Script (`/api/auth/login.php`)
 
-This script handles user login.
+This script handles user login and now returns the `shopType` from the `business_details` table.
 
 ```php
 <?php
@@ -176,7 +176,12 @@ if (!empty($data->email) && !empty($data->password)) {
     $email = mysqli_real_escape_string($link, $data->email);
     $password = $data->password;
 
-    $sql = "SELECT id, email, password FROM users WHERE email = ?";
+    // Join users and business_details tables to get shop_type on login
+    $sql = "SELECT u.id, u.email, u.password, bd.shop_type 
+            FROM users u
+            LEFT JOIN business_details bd ON u.id = bd.user_id
+            WHERE u.email = ?";
+            
     if ($stmt = mysqli_prepare($link, $sql)) {
         mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
@@ -191,7 +196,8 @@ if (!empty($data->email) && !empty($data->password)) {
                 http_response_code(200);
                 echo json_encode([
                     "message" => "Successful login.",
-                    "token" => $token
+                    "token" => $token,
+                    "shopType" => $row['shop_type'] // Send shopType to frontend
                 ]);
             } else {
                 http_response_code(401); // Unauthorized
@@ -218,7 +224,7 @@ mysqli_close($link);
 
 ## 6. Business Details Script (`/api/business-details.php`)
 
-This script will handle the form submission from the welcome page.
+This script handles the form submission from the welcome page.
 
 ```php
 <?php

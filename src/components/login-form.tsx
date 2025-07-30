@@ -24,7 +24,7 @@ export default function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/api/auth/login.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,17 +38,22 @@ export default function LoginForm() {
         throw new Error(data.message || 'Login failed.');
       }
       
-      sessionStorage.setItem('user-token', data.token || 'mock-token');
+      sessionStorage.setItem('user-token', data.token);
       
-      // In a real app, the API would return the shopType. We simulate by reading from localStorage.
-      const shopType = localStorage.getItem('shopType');
+      // The user's shopType is now returned from the backend on login.
+      if (data.shopType) {
+        localStorage.setItem('shopType', data.shopType);
+      } else {
+        // If shopType is not returned (e.g., user hasn't finished setup), remove it.
+        localStorage.removeItem('shopType');
+      }
 
       toast({
         title: 'Login Successful',
         description: 'Welcome back to RetailLab!',
       });
 
-      if (shopType === 'Fuel Station') {
+      if (data.shopType === 'Fuel Station') {
         router.push('/dashboard/fuel-management');
       } else {
         router.push('/dashboard');
