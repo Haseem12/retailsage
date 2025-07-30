@@ -59,7 +59,7 @@ export default function WelcomeForm() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/business-details.php`, {
+      const response = await fetch(`${API_BASE_URL}/api/business-details.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
