@@ -37,7 +37,7 @@ export default function PosSystem() {
   const [activeTab, setActiveTab] = useState('pos');
   const [calculatorInput, setCalculatorInput] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
-  const [receiptData, setReceiptData] = useState<{items: ReceiptItem[], subtotal: number} | null>(null);
+  const [receiptData, setReceiptData] = useState<{items: ReceiptItem[], subtotal: number, saleId: string} | null>(null);
 
   const [products, setProducts] = useLocalStorage<Product[]>('products', []);
   const [sales, setSales] = useLocalStorage<Sale[]>('sales', []);
@@ -121,6 +121,8 @@ export default function PosSystem() {
     });
     setProducts(updatedProducts);
 
+    const saleId = `sale_${new Date().getTime()}`;
+
     const newSale: Sale = {
       items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
       subtotal,
@@ -131,7 +133,21 @@ export default function PosSystem() {
     
     setSales([...sales, newSale]);
     
-    setReceiptData({items: newSale.items, subtotal: newSale.subtotal});
+    const businessDetails = {
+        name: localStorage.getItem('businessName') || 'RetailLab',
+        address: localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA',
+        rcNumber: localStorage.getItem('rcNumber') || '',
+        phoneNumber: localStorage.getItem('phoneNumber') || '',
+    };
+    
+    const receiptForStorage = {
+        ...newSale,
+        businessDetails
+    };
+
+    sessionStorage.setItem(saleId, JSON.stringify(receiptForStorage));
+    
+    setReceiptData({items: newSale.items, subtotal: newSale.subtotal, saleId});
     setShowReceipt(true);
     setCart([]);
   };
@@ -277,6 +293,7 @@ export default function PosSystem() {
         onClose={() => setShowReceipt(false)} 
         items={receiptData.items}
         subtotal={receiptData.subtotal}
+        saleId={receiptData.saleId}
       />}
     </div>
   );

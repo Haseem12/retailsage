@@ -6,6 +6,8 @@ import RetailLabLogo from './retaillab-logo';
 import { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
+import { cn } from '@/lib/utils';
+import Link from 'next/link';
 
 export interface ReceiptItem {
   name: string;
@@ -18,11 +20,13 @@ interface ReceiptModalProps {
   onClose: () => void;
   items: ReceiptItem[];
   subtotal: number;
+  saleId: string;
 }
 
-export default function ReceiptModal({ isOpen, onClose, items, subtotal }: ReceiptModalProps) {
+export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId }: ReceiptModalProps) {
   const [businessDetails, setBusinessDetails] = useState({ name: 'RetailLab', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
   const [showDetailsForm, setShowDetailsForm] = useState(false);
+  const [isAndroid, setIsAndroid] = useState(false);
   
   const [rcInput, setRcInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
@@ -42,6 +46,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
         setShowDetailsForm(false);
       }
     }
+    setIsAndroid(/android/i.test(navigator.userAgent));
   }, [isOpen]);
 
   const tax = subtotal * 0.08;
@@ -60,6 +65,8 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
     setRcInput('');
     setPhoneInput('');
   }
+
+  const printUrl = `${window.location.origin}/api/print?saleId=${saleId}`;
   
   const renderDetailsForm = () => (
     <>
@@ -87,6 +94,17 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
 
   const renderReceiptContent = () => (
     <>
+      <style>{`
+        @media print {
+          .print-content {
+            font-family: 'Courier New', monospace;
+            color: black;
+          }
+          .print\\:text-black { color: black !important; }
+          .print\\:text-gray-600 { color: #555 !important; }
+          .print\\:hidden { display: none !important; }
+        }
+      `}</style>
       <div className="print-content">
         <DialogHeader className="text-center items-center">
           <RetailLabLogo className="w-8 h-8 my-2 print:text-black"/>
@@ -123,7 +141,13 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
         <p className="text-center text-xs mt-4 print:text-gray-600">Thank you for your purchase!</p>
       </div>
       <DialogFooter className="mt-4 print:hidden">
-        <Button onClick={handlePrint} variant="outline">Print</Button>
+        {isAndroid ? (
+          <Button asChild variant="outline">
+            <a href={`my.bluetoothprint.scheme://${printUrl}`}>Print with App</a>
+          </Button>
+        ) : (
+          <Button onClick={handlePrint} variant="outline">Print</Button>
+        )}
         <Button onClick={onClose} className="bg-accent text-accent-foreground hover:bg-accent/90">Close</Button>
       </DialogFooter>
     </>
