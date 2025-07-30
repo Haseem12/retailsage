@@ -1,12 +1,10 @@
 
-'use client'
 import type { Metadata } from 'next';
 import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DesktopLockScreen from '@/components/desktop-lock-screen';
 import { useEffect, useState } from 'react';
-
 
 // This metadata is still useful for SEO and mobile browser tabs.
 export const metadata: Metadata = {
@@ -15,6 +13,8 @@ export const metadata: Metadata = {
 };
 
 function AppContent({ children }: { children: React.ReactNode }) {
+  'use client';
+
   const isMobile = useIsMobile();
   const [isClient, setIsClient] = useState(false);
 
@@ -56,4 +56,3 @@ export default function RootLayout({
     </html>
   );
 }
-
