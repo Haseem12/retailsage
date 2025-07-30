@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -51,7 +52,7 @@ export default function InventoryManagement() {
     setLoading(true);
     try {
       const token = sessionStorage.getItem('user-token');
-      const response = await fetch(`${API_BASE_URL}/api/products.php?action=read`, {
+      const response = await fetch(`${API_BASE_URL}/api/products.php`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -59,7 +60,13 @@ export default function InventoryManagement() {
       const data = await response.json();
       if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
       if (data.products) {
-        setProducts(data.products);
+        // Ensure price and stock are numbers
+        const typedProducts = data.products.map((p: any) => ({
+            ...p,
+            price: parseFloat(p.price),
+            stock: parseInt(p.stock, 10),
+        }));
+        setProducts(typedProducts);
       } else {
         setProducts([]);
       }
@@ -77,7 +84,7 @@ export default function InventoryManagement() {
   useEffect(() => {
     setIsClient(true);
     fetchProducts();
-  }, []);
+  }, [toast]);
   
   const resetEditForm = () => {
     setEditProductName('');
