@@ -1,6 +1,7 @@
 
 'use client';
 import { useState } from 'react';
+import Link from 'next/link';
 import {
   Apple,
   Milk,
@@ -19,6 +20,7 @@ import {
   Divide,
   Calculator,
   Trash2,
+  PackageOpen,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -27,6 +29,7 @@ import { PRODUCTS, type Product } from '@/lib/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReceiptModal, { type ReceiptItem } from './receipt-modal';
 import { Separator } from './ui/separator';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const iconMap: { [key: string]: React.ElementType } = {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
@@ -93,36 +96,52 @@ export default function PosSystem() {
     setCart([]);
   };
 
-  const ProductGrid = () => (
-    <Tabs defaultValue={categories[0]} className="w-full">
-      <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-        {categories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
-      </TabsList>
-      {categories.map(cat => (
-         <TabsContent key={cat} value={cat}>
-           <ScrollArea className="h-[65vh]">
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
-              {PRODUCTS.filter(p => p.category === cat).map((product) => {
-                const Icon = iconMap[product.icon] || Calculator;
-                return (
-                  <Button
-                    key={product.id}
-                    variant="outline"
-                    className="h-28 flex flex-col gap-2 p-2 justify-center"
-                    onClick={() => addToCart(product)}
-                  >
-                    <Icon className="w-8 h-8 text-primary" />
-                    <span className="text-xs text-center break-words">{product.name}</span>
-                    <span className="text-xs font-bold">₦{product.price.toFixed(2)}</span>
-                  </Button>
-                );
-              })}
-            </div>
-           </ScrollArea>
-        </TabsContent>
-      ))}
-    </Tabs>
-  );
+  const ProductGrid = () => {
+    if (PRODUCTS.length === 0) {
+      return (
+         <Alert>
+            <PackageOpen className="h-4 w-4" />
+            <AlertTitle>No Products Found</AlertTitle>
+            <AlertDescription>
+              Your inventory is empty. Please add products to start making sales.
+              <Button asChild variant="link" className="p-0 h-auto ml-1">
+                <Link href="/dashboard/inventory">Go to Inventory</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+      )
+    }
+    return (
+      <Tabs defaultValue={categories[0]} className="w-full">
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
+          {categories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
+        </TabsList>
+        {categories.map(cat => (
+           <TabsContent key={cat} value={cat}>
+             <ScrollArea className="h-[65vh] lg:h-auto lg:max-h-[calc(100vh-22rem)]">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
+                {PRODUCTS.filter(p => p.category === cat).map((product) => {
+                  const Icon = iconMap[product.icon] || Calculator;
+                  return (
+                    <Button
+                      key={product.id}
+                      variant="outline"
+                      className="h-28 flex flex-col gap-2 p-2 justify-center"
+                      onClick={() => addToCart(product)}
+                    >
+                      <Icon className="w-8 h-8 text-primary" />
+                      <span className="text-xs text-center break-words">{product.name}</span>
+                      <span className="text-xs font-bold">₦{product.price.toFixed(2)}</span>
+                    </Button>
+                  );
+                })}
+              </div>
+             </ScrollArea>
+          </TabsContent>
+        ))}
+      </Tabs>
+    );
+  }
 
   const CalculatorTab = () => (
     <div className="p-4 flex flex-col gap-2 max-w-xs mx-auto">
@@ -139,8 +158,8 @@ export default function PosSystem() {
   );
 
   return (
-    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-      <div className="lg:col-span-2">
+    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
+      <div className="xl:col-span-2">
         <Card>
           <CardHeader>
             <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
@@ -155,7 +174,7 @@ export default function PosSystem() {
           </CardContent>
         </Card>
       </div>
-      <div className="lg:col-span-1">
+      <div className="xl:col-span-1">
         <Card>
           <CardHeader>
             <CardTitle>Current Order</CardTitle>
@@ -215,3 +234,5 @@ export default function PosSystem() {
     </div>
   );
 }
+
+    
