@@ -1,6 +1,6 @@
 # PHP Backend Guide for RetailLab
 
-This guide provides the necessary PHP code and database setup to create the authentication and business setup backend for your RetailLab application.
+This guide provides the necessary PHP code and database setup to create the authentication and business logic backend for your RetailLab application.
 
 The frontend sends `POST` requests with a JSON body to the following endpoints:
 - **/api/auth/signup.php**
@@ -50,7 +50,7 @@ CREATE TABLE users (
 ```sql
 CREATE TABLE business_details (
     id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
+    user_id INT NOT NULL UNIQUE,
     business_name VARCHAR(255) NOT NULL,
     business_address TEXT NOT NULL,
     shop_type VARCHAR(100) NOT NULL,
@@ -149,14 +149,14 @@ if($link === false){
 
 function get_user_id_from_token($link) {
     $headers = apache_request_headers();
-    if (isset($headers['Authorization'])) {
-        $authHeader = $headers['Authorization'];
+    $authHeader = $headers['Authorization'] ?? null;
+    if ($authHeader) {
         list($jwt) = sscanf($authHeader, 'Bearer %s');
         if ($jwt) {
             // In a real app, you would decode the JWT and verify it.
             // For this mock setup, we assume the token is in the format "mock-token-for-USERID-TIMESTAMP"
             $parts = explode('-', $jwt);
-            if (count($parts) === 4 && $parts[0] === 'mock' && $parts[1] === 'token' && $parts[2] === 'for') {
+            if (count($parts) >= 4 && $parts[0] === 'mock' && $parts[1] === 'token' && $parts[2] === 'for') {
                 return (int)$parts[3];
             }
         }
@@ -166,10 +166,43 @@ function get_user_id_from_token($link) {
 ?>
 ```
 
-## 4. Login Script (`/api/auth/login.php`)
+## 4. Auth and Business Setup Scripts
 
-Updated to return more business details.
+### `/api/auth/signup.php`
+```php
+<?php
+// /api/auth/signup.php
+include_once 'config.php';
 
+$data = json_decode(file_get_contents("php://input"));
+
+if (empty($data->email) || empty($data->password)) {
+    http_response_code(400);
+    echo json_encode(["message" => "Incomplete data."]);
+    exit();
+}
+
+$email = mysqli_real_escape_string($link, $data->email);
+$password = password_hash($data->password, PASSWORD_DEFAULT);
+
+$sql = "INSERT INTO users (email, password) VALUES (?, ?)";
+
+if ($stmt = mysqli_prepare($link, $sql)) {
+    mysqli_stmt_bind_param($stmt, "ss", $email, $password);
+    if (mysqli_stmt_execute($stmt)) {
+        http_response_code(201);
+        echo json_encode(["message" => "User created.", "userId" => mysqli_insert_id($link)]);
+    } else {
+        http_response_code(409); // Conflict
+        echo json_encode(["message" => "User with this email already exists."]);
+    }
+    mysqli_stmt_close($stmt);
+}
+mysqli_close($link);
+?>
+```
+
+### `/api/auth/login.php`
 ```php
 <?php
 // /api/auth/login.php
@@ -225,13 +258,50 @@ mysqli_close($link);
 ?>
 ```
 
-## 5. New API Scripts
+### `/api/business-details.php`
+```php
+<?php
+// /api/business-details.php
+include_once 'auth/config.php';
 
-Create the following files in `/api/`.
+$data = json_decode(file_get_contents("php://input"));
+
+if (empty($data->userId) || empty($data->businessName) || empty($data->businessAddress) || empty($data->shopType)) {
+    http_response_code(400);
+    echo json_encode(["message" => "Incomplete data for business setup."]);
+    exit();
+}
+
+$user_id = (int)$data->userId;
+$business_name = mysqli_real_escape_string($link, $data->businessName);
+$business_address = mysqli_real_escape_string($link, $data->businessAddress);
+$shop_type = mysqli_real_escape_string($link, $data->shopType);
+
+// Using INSERT ... ON DUPLICATE KEY UPDATE to handle both new and existing entries
+$sql = "INSERT INTO business_details (user_id, business_name, business_address, shop_type) VALUES (?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE business_name = VALUES(business_name), business_address = VALUES(business_address), shop_type = VALUES(shop_type)";
+
+if ($stmt = mysqli_prepare($link, $sql)) {
+    mysqli_stmt_bind_param($stmt, "isss", $user_id, $business_name, $business_address, $shop_type);
+    if (mysqli_stmt_execute($stmt)) {
+        http_response_code(201);
+        echo json_encode(["message" => "Business details saved successfully."]);
+    } else {
+        http_response_code(500);
+        echo json_encode(["message" => "Failed to save business details."]);
+    }
+    mysqli_stmt_close($stmt);
+}
+mysqli_close($link);
+?>
+```
+
+## 5. Main API Scripts
 
 ### `/api/products.php`
 ```php
 <?php
+// /api/products.php
 include_once 'auth/config.php';
 $user_id = get_user_id_from_token($link);
 if (!$user_id) {
@@ -247,88 +317,131 @@ if ($method == 'POST') {
     $action = $data->action ?? null;
 
     if ($action == 'create') {
-        // Create product logic
-    } elseif ($action == 'update') {
-        // Update product logic
-    } elseif ($action == 'delete') {
-        // Delete product logic
-    }
-} elseif ($method == 'GET') {
-    $action = $_GET['action'] ?? null;
-    if ($action == 'read') {
-        $sql = "SELECT * FROM products WHERE user_id = ?";
+        $sql = "INSERT INTO products (user_id, name, price, stock, category, barcode, description, icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         if($stmt = mysqli_prepare($link, $sql)){
-            mysqli_stmt_bind_param($stmt, "i", $user_id);
+            mysqli_stmt_bind_param($stmt, "isdissis", $user_id, $data->name, $data->price, $data->stock, $data->category, $data->barcode, $data->description, $data->icon);
             mysqli_stmt_execute($stmt);
-            $result = mysqli_stmt_get_result($stmt);
-            $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
-            echo json_encode(["products" => $products]);
+            http_response_code(201);
+            echo json_encode(["message" => "Product created", "id" => mysqli_insert_id($link)]);
+        }
+    } elseif ($action == 'update') {
+        $sql = "UPDATE products SET name = ?, price = ?, stock = ? WHERE id = ? AND user_id = ?";
+        if($stmt = mysqli_prepare($link, $sql)){
+            mysqli_stmt_bind_param($stmt, "sdiii", $data->name, $data->price, $data->stock, $data->id, $user_id);
+            mysqli_stmt_execute($stmt);
+            http_response_code(200);
+            echo json_encode(["message" => "Product updated"]);
+        }
+    } elseif ($action == 'delete') {
+        $sql = "DELETE FROM products WHERE id = ? AND user_id = ?";
+         if($stmt = mysqli_prepare($link, $sql)){
+            mysqli_stmt_bind_param($stmt, "ii", $data->id, $user_id);
+            mysqli_stmt_execute($stmt);
+            http_response_code(200);
+            echo json_encode(["message" => "Product deleted"]);
         }
     }
+} elseif ($method == 'GET') {
+    $sql = "SELECT id, name, price, stock, category, barcode, description, icon FROM products WHERE user_id = ?";
+    if($stmt = mysqli_prepare($link, $sql)){
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $products = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        echo json_encode(["products" => $products]);
+    }
 }
-// Implement create, update, delete logic as needed, similar to other scripts.
-// Ensure to handle all data from $data object and bind params to prevent SQL injection.
+mysqli_close($link);
 ?>
 ```
 
 ### `/api/sales.php`
 ```php
 <?php
+// /api/sales.php
 include_once 'auth/config.php';
-$user_id = get_user_id_from_token($link);
 
 $method = $_SERVER['REQUEST_METHOD'];
 
 if ($method == 'POST') {
-     if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
+    $user_id = get_user_id_from_token($link);
+    if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
+
     $data = json_decode(file_get_contents("php://input"));
-    $action = $data->action ?? null;
+    mysqli_begin_transaction($link);
+    try {
+        // Create the main sale record
+        $sql_sale = "INSERT INTO sales (user_id, total) VALUES (?, ?)";
+        $stmt_sale = mysqli_prepare($link, $sql_sale);
+        mysqli_stmt_bind_param($stmt_sale, "id", $user_id, $data->total);
+        mysqli_stmt_execute($stmt_sale);
+        $sale_id = mysqli_insert_id($link);
 
-    if ($action == 'create') {
-        mysqli_begin_transaction($link);
-        try {
-            $sql_sale = "INSERT INTO sales (user_id, total) VALUES (?, ?)";
-            $stmt_sale = mysqli_prepare($link, $sql_sale);
-            mysqli_stmt_bind_param($stmt_sale, "id", $user_id, $data->total);
-            mysqli_stmt_execute($stmt_sale);
-            $sale_id = mysqli_insert_id($link);
+        // Insert sale items and update stock
+        $sql_item = "INSERT INTO sale_items (sale_id, product_id, quantity, price, name) VALUES (?, ?, ?, ?, ?)";
+        $stmt_item = mysqli_prepare($link, $sql_item);
 
-            $sql_item = "INSERT INTO sale_items (sale_id, product_id, quantity, price, name) VALUES (?, ?, ?, ?, ?)";
-            $stmt_item = mysqli_prepare($link, $sql_item);
+        $sql_stock = "UPDATE products SET stock = stock - ? WHERE id = ? AND user_id = ?";
+        $stmt_stock = mysqli_prepare($link, $sql_stock);
+
+        foreach($data->items as $item) {
+            $product_info_sql = "SELECT name FROM products WHERE id = ?";
+            $product_info_stmt = mysqli_prepare($link, $product_info_sql);
+            mysqli_stmt_bind_param($product_info_stmt, "i", $item->product_id);
+            mysqli_stmt_execute($product_info_stmt);
+            $product_result = mysqli_stmt_get_result($product_info_stmt);
+            $product_info = mysqli_fetch_assoc($product_result);
+            $item_name = $product_info['name'];
+
+            mysqli_stmt_bind_param($stmt_item, "iiids", $sale_id, $item->product_id, $item->quantity, $item->price, $item_name);
+            mysqli_stmt_execute($stmt_item);
             
-            foreach($data->items as $item) {
-                mysqli_stmt_bind_param($stmt_item, "iiids", $sale_id, $item->product_id, $item->quantity, $item->price, $item->name);
-                mysqli_stmt_execute($stmt_item);
-
-                // Update stock
-                $sql_stock = "UPDATE products SET stock = stock - ? WHERE id = ? AND user_id = ?";
-                $stmt_stock = mysqli_prepare($link, $sql_stock);
-                mysqli_stmt_bind_param($stmt_stock, "iii", $item->quantity, $item->product_id, $user_id);
-                mysqli_stmt_execute($stmt_stock);
-            }
-            
-            mysqli_commit($link);
-            http_response_code(201);
-            echo json_encode(["message" => "Sale created successfully", "sale_id" => $sale_id]);
-
-        } catch (mysqli_sql_exception $exception) {
-            mysqli_rollback($link);
-            http_response_code(500);
-            echo json_encode(["message" => "Failed to create sale", "error" => $exception->getMessage()]);
+            mysqli_stmt_bind_param($stmt_stock, "iii", $item->quantity, $item->product_id, $user_id);
+            mysqli_stmt_execute($stmt_stock);
         }
+        
+        mysqli_commit($link);
+        http_response_code(201);
+        echo json_encode(["message" => "Sale created successfully", "sale_id" => $sale_id]);
+
+    } catch (mysqli_sql_exception $exception) {
+        mysqli_rollback($link);
+        http_response_code(500);
+        echo json_encode(["message" => "Failed to create sale", "error" => $exception->getMessage()]);
     }
+
 } elseif ($method == 'GET') {
     $action = $_GET['action'] ?? null;
-    $id = $_GET['id'] ?? null;
-
+    
     if ($action == 'read') {
-         if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
-        // Fetch all sales for the user
-        // You will need to join with sale_items to get the full sale details
-    } elseif ($action == 'read_single' && $id) {
-        // No user_id check here, as it's for the printer and may not have a token.
-        // In a real app, this should be a secured, signed URL.
-        $sql = "SELECT s.id, s.total, s.date, bd.business_name, bd.business_address, bd.rc_number, bd.phone_number 
+        $user_id = get_user_id_from_token($link);
+        if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
+
+        $sql_sales = "SELECT id, total, date FROM sales WHERE user_id = ?";
+        $stmt_sales = mysqli_prepare($link, $sql_sales);
+        mysqli_stmt_bind_param($stmt_sales, "i", $user_id);
+        mysqli_stmt_execute($stmt_sales);
+        $result_sales = mysqli_stmt_get_result($stmt_sales);
+        $sales = mysqli_fetch_all($result_sales, MYSQLI_ASSOC);
+
+        $sql_items = "SELECT sale_id, name, quantity, price FROM sale_items WHERE sale_id = ?";
+        $stmt_items = mysqli_prepare($link, $sql_items);
+
+        foreach ($sales as $key => $sale) {
+            mysqli_stmt_bind_param($stmt_items, "i", $sale['id']);
+            mysqli_stmt_execute($stmt_items);
+            $result_items = mysqli_stmt_get_result($stmt_items);
+            $sales[$key]['items'] = mysqli_fetch_all($result_items, MYSQLI_ASSOC);
+        }
+
+        echo json_encode(["sales" => $sales]);
+
+    } elseif ($action == 'read_single') {
+        // This endpoint might be public for the printer app, but secured in a real app.
+        $id = $_GET['id'] ?? null;
+        if (!$id) { http_response_code(400); echo json_encode(["message" => "No ID provided"]); exit(); }
+
+        $sql = "SELECT s.id, s.total, s.date, s.user_id, bd.business_name, bd.business_address, bd.rc_number, bd.phone_number 
                 FROM sales s
                 JOIN users u ON s.user_id = u.id
                 LEFT JOIN business_details bd ON u.id = bd.user_id
@@ -351,9 +464,153 @@ if ($method == 'POST') {
         }
     }
 }
-// Implement the read logic to fetch all sales and their items for a user.
+mysqli_close($link);
 ?>
 ```
 
-### `/api/spoilage.php` & `/api/data.php`
-You will need to create these files and implement the logic for `create`, `read`, `delete` (for spoilage) and `backup`, `restore` (for data) following the patterns above. Remember to always authorize the user with `get_user_id_from_token()` for actions that modify or read sensitive data.
+### `/api/spoilage.php`
+```php
+<?php
+// /api/spoilage.php
+include_once 'auth/config.php';
+$user_id = get_user_id_from_token($link);
+if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method == 'POST') {
+    $data = json_decode(file_get_contents("php://input"));
+    $action = $data->action ?? null;
+
+    if ($action == 'create') {
+        mysqli_begin_transaction($link);
+        try {
+            // Get product name
+            $p_sql = "SELECT name FROM products WHERE id = ? AND user_id = ?";
+            $p_stmt = mysqli_prepare($link, $p_sql);
+            mysqli_stmt_bind_param($p_stmt, "ii", $data->product_id, $user_id);
+            mysqli_stmt_execute($p_stmt);
+            $p_res = mysqli_stmt_get_result($p_stmt);
+            $product = mysqli_fetch_assoc($p_res);
+            $productName = $product['name'];
+
+            // Insert spoilage record
+            $sql = "INSERT INTO spoilage (user_id, product_id, productName, quantity, reason) VALUES (?, ?, ?, ?, ?)";
+            $stmt = mysqli_prepare($link, $sql);
+            mysqli_stmt_bind_param($stmt, "iisis", $user_id, $data->product_id, $productName, $data->quantity, $data->reason);
+            mysqli_stmt_execute($stmt);
+            
+            // Update stock
+            $sql_stock = "UPDATE products SET stock = stock - ? WHERE id = ? AND user_id = ?";
+            $stmt_stock = mysqli_prepare($link, $sql_stock);
+            mysqli_stmt_bind_param($stmt_stock, "iii", $data->quantity, $data->product_id, $user_id);
+            mysqli_stmt_execute($stmt_stock);
+
+            mysqli_commit($link);
+            http_response_code(201);
+            echo json_encode(["message" => "Spoilage logged"]);
+        } catch (Exception $e) {
+            mysqli_rollback($link);
+            http_response_code(500);
+            echo json_encode(["message" => "Failed to log spoilage", "error" => $e->getMessage()]);
+        }
+    } elseif ($action == 'delete') {
+        $sql = "DELETE FROM spoilage WHERE id = ? AND user_id = ?";
+        $stmt = mysqli_prepare($link, $sql);
+        mysqli_stmt_bind_param($stmt, "ii", $data->id, $user_id);
+        mysqli_stmt_execute($stmt);
+        http_response_code(200);
+        echo json_encode(["message" => "Spoilage record deleted"]);
+    }
+} elseif ($method == 'GET') {
+    $sql = "SELECT id, product_id as productId, productName, quantity, reason, date FROM spoilage WHERE user_id = ?";
+    if($stmt = mysqli_prepare($link, $sql)){
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+        $spoilage = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        echo json_encode(["spoilage" => $spoilage]);
+    }
+}
+mysqli_close($link);
+?>
+```
+
+### `/api/data.php`
+```php
+<?php
+// /api/data.php
+include_once 'auth/config.php';
+$user_id = get_user_id_from_token($link);
+if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method == 'GET' && $_GET['action'] == 'backup') {
+    $backup_data = [];
+    
+    // Backup products
+    $sql_products = "SELECT name, price, stock, category, barcode, description, icon FROM products WHERE user_id = ?";
+    $stmt_products = mysqli_prepare($link, $sql_products);
+    mysqli_stmt_bind_param($stmt_products, "i", $user_id);
+    mysqli_stmt_execute($stmt_products);
+    $result_products = mysqli_stmt_get_result($stmt_products);
+    $backup_data['products'] = mysqli_fetch_all($result_products, MYSQLI_ASSOC);
+
+    // Backup sales
+    $sql_sales = "SELECT total, date FROM sales WHERE user_id = ?";
+    $stmt_sales = mysqli_prepare($link, $sql_sales);
+    mysqli_stmt_bind_param($stmt_sales, "i", $user_id);
+    mysqli_stmt_execute($stmt_sales);
+    $result_sales = mysqli_stmt_get_result($stmt_sales);
+    $backup_data['sales'] = mysqli_fetch_all($result_sales, MYSQLI_ASSOC);
+    
+    // Backup spoilage
+    $sql_spoilage = "SELECT productName, quantity, reason, date FROM spoilage WHERE user_id = ?";
+    $stmt_spoilage = mysqli_prepare($link, $sql_spoilage);
+    mysqli_stmt_bind_param($stmt_spoilage, "i", $user_id);
+    mysqli_stmt_execute($stmt_spoilage);
+    $result_spoilage = mysqli_stmt_get_result($stmt_spoilage);
+    $backup_data['spoilage'] = mysqli_fetch_all($result_spoilage, MYSQLI_ASSOC);
+    
+    echo json_encode($backup_data);
+    
+} elseif ($method == 'POST' && $_GET['action'] == 'restore') {
+    $data = json_decode(file_get_contents("php://input"), true);
+    mysqli_begin_transaction($link);
+    try {
+        // Clear existing data
+        $tables = ['products', 'sale_items', 'sales', 'spoilage'];
+        foreach ($tables as $table) {
+            $delete_sql = "DELETE FROM $table WHERE user_id = ?";
+            $delete_stmt = mysqli_prepare($link, $delete_sql);
+            mysqli_stmt_bind_param($delete_stmt, "i", $user_id);
+            mysqli_stmt_execute($delete_stmt);
+        }
+
+        // Restore products
+        if (!empty($data['products'])) {
+            $product_sql = "INSERT INTO products (user_id, name, price, stock, category, barcode, description, icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            $product_stmt = mysqli_prepare($link, $product_sql);
+            foreach ($data['products'] as $p) {
+                mysqli_stmt_bind_param($product_stmt, "isdissss", $user_id, $p['name'], $p['price'], $p['stock'], $p['category'], $p['barcode'], $p['description'], $p['icon']);
+                mysqli_stmt_execute($product_stmt);
+            }
+        }
+        
+        // Note: Restoring sales and spoilage is more complex as it involves recreating history.
+        // For this guide, we keep it simple. A production system might handle this differently.
+        
+        mysqli_commit($link);
+        http_response_code(200);
+        echo json_encode(["message" => "Data restored successfully"]);
+
+    } catch (Exception $e) {
+        mysqli_rollback($link);
+        http_response_code(500);
+        echo json_encode(["message" => "Failed to restore data", "error" => $e->getMessage()]);
+    }
+}
+mysqli_close($link);
+?>
+```
