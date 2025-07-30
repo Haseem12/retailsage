@@ -10,33 +10,33 @@ import {
   type CarouselApi,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import RetailLabLogo from '@/components/retaillab-logo';
 import { useEffect, useState } from 'react';
+import { cn } from '@/lib/utils';
 
 const onboardingSteps = [
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'retail analytics',
+    aiHint: 'retail analytics illustration',
     title: 'Welcome to RetailLab',
     description: 'Your all-in-one solution for retail management and AI-powered insights.',
   },
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'inventory management',
+    aiHint: 'inventory management illustration',
     title: 'Smart Inventory',
     description: 'Track stock levels, manage inventory, and reduce spoilage with our intelligent tools.',
   },
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'sales dashboard',
+    aiHint: 'sales dashboard illustration',
     title: 'AI-Driven Analytics',
     description: 'Leverage the power of AI to understand sales trends and identify risks before they happen.',
   },
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'mobile point of sale',
+    aiHint: 'mobile point of sale illustration',
     title: 'Point of Sale, Anywhere',
     description: 'A modern, easy-to-use POS system that works on any device.',
   },
@@ -51,10 +51,10 @@ export default function OnboardingPage() {
       return;
     }
 
-    setCurrent(api.selectedScrollSnap());
+    setCurrent(api.selectedScrollSnap() + 1);
 
     const onSelect = () => {
-      setCurrent(api.selectedScrollSnap());
+      setCurrent(api.selectedScrollSnap() + 1);
     };
 
     api.on('select', onSelect);
@@ -80,36 +80,44 @@ export default function OnboardingPage() {
           <CarouselContent className="h-full">
             {onboardingSteps.map((step, index) => (
               <CarouselItem key={index} className="h-full">
-                <div className="flex flex-col items-center justify-center h-full">
-                    <Card className="bg-card/80 backdrop-blur-sm border-border/50 w-full max-w-md">
-                    <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-                        <Image
-                        src={step.image}
-                        alt={step.title}
-                        width={600}
-                        height={400}
-                        data-ai-hint={step.aiHint}
-                        className="rounded-lg mb-4"
-                        />
-                        <h2 className="text-2xl font-bold">{step.title}</h2>
-                        <p className="text-muted-foreground">{step.description}</p>
-                    </CardContent>
-                    </Card>
+                <div className="flex flex-col items-center justify-center h-full text-white p-6 gap-4">
+                    <Image
+                    src={step.image}
+                    alt={step.title}
+                    width={600}
+                    height={400}
+                    data-ai-hint={step.aiHint}
+                    className="rounded-lg mb-4 w-4/5 max-w-sm"
+                    />
+                    <h2 className="text-2xl font-bold">{step.title}</h2>
+                    <p className="text-white/80">{step.description}</p>
                 </div>
               </CarouselItem>
             ))}
           </CarouselContent>
-          <CarouselPrevious />
-          <CarouselNext />
+          <CarouselPrevious className="text-white" />
+          <CarouselNext className="text-white" />
         </Carousel>
+
+        <div className="flex items-center gap-2 my-4">
+          {onboardingSteps.map((_, i) => (
+            <div
+              key={i}
+              className={cn(
+                'h-2 w-2 rounded-full bg-white/50 transition-all',
+                i + 1 === current && 'w-4 bg-white'
+              )}
+            />
+          ))}
+        </div>
         
-        <div className="w-full max-w-md flex flex-col gap-4 py-8">
-            {current === onboardingSteps.length - 1 && (
+        <div className="w-full max-w-md flex flex-col gap-4 py-8 h-28">
+            {current === onboardingSteps.length && (
                 <>
-                <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 animate-in fade-in duration-500">
                     <Link href="/signup">Create an Account</Link>
                 </Button>
-                <Button asChild size="lg" variant="outline">
+                <Button asChild size="lg" variant="outline" className="animate-in fade-in duration-500">
                     <Link href="/login">Login</Link>
                 </Button>
                 </>
