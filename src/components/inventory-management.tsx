@@ -2,11 +2,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { PRODUCTS, type Product } from '@/lib/constants';
-import { PlusCircle, MoreHorizontal, Edit, Trash2 } from 'lucide-react';
+import { type Product } from '@/lib/constants';
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Printer } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -20,23 +21,16 @@ import {
   DialogHeader,
   DialogTitle,
   DialogFooter,
-  DialogTrigger,
   DialogClose
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import ProductLabelModal from './product-label-modal';
 
 export default function InventoryManagement() {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', PRODUCTS);
+  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
   const [isClient, setIsClient] = useState(false);
-
-  // State for Add Product Dialog
-  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-  const [newProductName, setNewProductName] = useState('');
-  const [newProductPrice, setNewProductPrice] = useState('');
-  const [newProductStock, setNewProductStock] = useState('');
-  const [newProductCategory, setNewProductCategory] = useState('Groceries');
-  const [newProductIcon, setNewProductIcon] = useState('Apple');
+  const router = useRouter();
 
   // State for Edit Product Dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -46,17 +40,14 @@ export default function InventoryManagement() {
   const [currentStock, setCurrentStock] = useState('');
   const [additionalStock, setAdditionalStock] = useState('');
 
+  // State for Label Printing
+  const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
+  const [productForLabel, setProductForLabel] = useState<Product | null>(null);
 
   useEffect(() => {
     setIsClient(true);
   }, []);
-
-  const resetAddForm = () => {
-    setNewProductName('');
-    setNewProductPrice('');
-    setNewProductStock('');
-  }
-
+  
   const resetEditForm = () => {
     setEditProductName('');
     setEditProductPrice('');
@@ -64,25 +55,6 @@ export default function InventoryManagement() {
     setCurrentStock('');
     setSelectedProduct(null);
   }
-
-  const handleAddProduct = () => {
-    if (!newProductName || !newProductPrice || !newProductStock) {
-      alert('Please fill in all fields.');
-      return;
-    }
-    const newProduct: Product = {
-      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      name: newProductName,
-      price: parseFloat(newProductPrice),
-      stock: parseInt(newProductStock, 10),
-      category: newProductCategory,
-      icon: newProductIcon,
-    };
-    setProducts([...products, newProduct]);
-    
-    resetAddForm();
-    setIsAddDialogOpen(false);
-  };
 
   const handleEditProduct = () => {
     if (!selectedProduct) return;
@@ -93,7 +65,7 @@ export default function InventoryManagement() {
           ...p,
           name: editProductName,
           price: parseFloat(editProductPrice),
-          stock: p.stock + (parseInt(additionalStock, 10) || 0)
+          stock: (parseInt(currentStock) || 0) + (parseInt(additionalStock, 10) || 0)
         }
       }
       return p;
@@ -118,43 +90,14 @@ export default function InventoryManagement() {
     setIsEditDialogOpen(true);
   }
 
+  const openLabelDialog = (product: Product) => {
+    setProductForLabel(product);
+    setIsLabelModalOpen(true);
+  }
+
   if (!isClient) {
     return null; // Don't render on the server
   }
-
-  const AddProductDialog = () => (
-    <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => { setIsAddDialogOpen(isOpen); if(!isOpen) resetAddForm(); }}>
-      <DialogTrigger asChild>
-        <Button>
-          <PlusCircle className="mr-2" />
-          Add Product
-        </Button>
-      </DialogTrigger>
-      <DialogContent>
-        <DialogHeader>
-          <DialogTitle>Add New Product</DialogTitle>
-        </DialogHeader>
-        <div className="grid gap-4 py-4">
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="name" className="text-right">Name</Label>
-            <Input id="name" value={newProductName} onChange={e => setNewProductName(e.target.value)} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="price" className="text-right">Price (₦)</Label>
-            <Input id="price" type="number" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} className="col-span-3" />
-          </div>
-          <div className="grid grid-cols-4 items-center gap-4">
-            <Label htmlFor="stock" className="text-right">Initial Stock</Label>
-            <Input id="stock" type="number" value={newProductStock} onChange={e => setNewProductStock(e.target.value)} className="col-span-3" />
-          </div>
-        </div>
-        <DialogFooter>
-          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
-          <Button onClick={handleAddProduct}>Add Product</Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
 
   const EditProductDialog = () => (
      <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => { setIsEditDialogOpen(isOpen); if(!isOpen) resetEditForm(); }}>
@@ -173,7 +116,7 @@ export default function InventoryManagement() {
           </div>
           <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="current-stock" className="text-right">Current Stock</Label>
-            <Input id="current-stock" type="number" value={currentStock} disabled className="col-span-3" />
+            <Input id="current-stock" type="number" value={currentStock} onChange={(e) => setCurrentStock(e.target.value)} className="col-span-3" />
           </div>
            <div className="grid grid-cols-4 items-center gap-4">
             <Label htmlFor="add-stock" className="text-right">Add Stock</Label>
@@ -189,13 +132,17 @@ export default function InventoryManagement() {
   )
 
   return (
+    <>
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
         <div className="space-y-1.5">
           <CardTitle>Inventory Management</CardTitle>
           <CardDescription>View, add, and manage your product stock.</CardDescription>
         </div>
-        <AddProductDialog />
+        <Button onClick={() => router.push('/dashboard/inventory/add')}>
+          <PlusCircle className="mr-2" />
+          Add Product
+        </Button>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -230,6 +177,10 @@ export default function InventoryManagement() {
                             <Edit className="mr-2 h-4 w-4" />
                             <span>Edit / Add Stock</span>
                           </DropdownMenuItem>
+                          <DropdownMenuItem onClick={() => openLabelDialog(product)}>
+                            <Printer className="mr-2 h-4 w-4" />
+                            <span>Print Label</span>
+                          </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteProduct(product.id)}
                             className="text-destructive"
@@ -255,5 +206,13 @@ export default function InventoryManagement() {
         <EditProductDialog />
       </CardContent>
     </Card>
+    {productForLabel && (
+      <ProductLabelModal 
+        isOpen={isLabelModalOpen}
+        onClose={() => setIsLabelModalOpen(false)}
+        product={productForLabel}
+      />
+    )}
+    </>
   );
 }
