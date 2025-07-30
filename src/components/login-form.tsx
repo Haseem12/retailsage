@@ -38,15 +38,22 @@ export default function LoginForm() {
         throw new Error(data.message || 'Login failed.');
       }
       
-      // Assuming the backend returns a token on successful login
-      // For simulation, we'll store a mock token.
       sessionStorage.setItem('user-token', data.token || 'mock-token');
+      
+      // In a real app, the API would return the shopType. We simulate by reading from localStorage.
+      const shopType = localStorage.getItem('shopType');
 
       toast({
         title: 'Login Successful',
         description: 'Welcome back to RetailLab!',
       });
-      router.push('/dashboard');
+
+      if (shopType === 'Fuel Station') {
+        router.push('/dashboard/fuel-management');
+      } else {
+        router.push('/dashboard');
+      }
+
     } catch (error: any) {
       toast({
         variant: 'destructive',

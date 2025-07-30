@@ -14,18 +14,18 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Shield, Flame, Settings, LogOut, Building, Utensils, Tv, ShoppingCart, Shirt } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
 import RetailLabLogo from '@/components/retaillab-logo';
 import { Loader2 } from 'lucide-react';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { href: '/dashboard/risk-analysis', label: 'Risk Analysis', icon: Shield },
-  { href: '/dashboard/fuel-management', label: 'Fuel', icon: Flame },
-  { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+const allNavItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
+  { href: '/dashboard/risk-analysis', label: 'Risk Analysis', icon: Shield, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
+  { href: '/dashboard/fuel-management', label: 'Fuel', icon: Flame, shopTypes: ['Fuel Station'] },
+  { href: '/dashboard/settings', label: 'Settings', icon: Settings, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
 ];
 
 export default function DashboardLayout({
@@ -37,20 +37,24 @@ export default function DashboardLayout({
   const router = useRouter();
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [navItems, setNavItems] = useState(allNavItems);
 
   useEffect(() => {
-    // This is a simulation. In a real app, you'd verify the token with the backend.
     const token = sessionStorage.getItem('user-token');
     if (!token) {
       router.push('/login');
     } else {
       setIsAuthenticated(true);
+      const shopType = localStorage.getItem('shopType') || 'Other';
+      const filteredNavItems = allNavItems.filter(item => item.shopTypes.includes(shopType));
+      setNavItems(filteredNavItems);
     }
     setLoading(false);
   }, [router]);
 
   const handleLogout = () => {
     sessionStorage.removeItem('user-token');
+    localStorage.removeItem('shopType');
     router.push('/login');
   };
   
@@ -61,7 +65,6 @@ export default function DashboardLayout({
       </div>
     );
   }
-
 
   return (
     <SidebarProvider>

@@ -12,7 +12,7 @@ import { Loader2 } from 'lucide-react';
 import RetailLabLogo from './retaillab-logo';
 import { Label } from './ui/label';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/api';
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 const shopTypes = [
   "Fuel Station",
@@ -73,6 +73,9 @@ export default function WelcomeForm() {
         throw new Error(data.message || 'Failed to save details.');
       }
       
+      // Store shopType for dashboard customization simulation
+      localStorage.setItem('shopType', shopType);
+      
       sessionStorage.removeItem('new-user-id'); // Clean up stored ID
 
       toast({
@@ -128,7 +131,7 @@ export default function WelcomeForm() {
           </div>
           <div className="space-y-2">
             <Label>Shop Type</Label>
-            <Select onValueChange={setShopType} value={shopType}>
+            <Select onValueChange={setShopType} value={shopType} required>
                 <SelectTrigger className="bg-background/70">
                     <SelectValue placeholder="Select a shop type" />
                 </SelectTrigger>
