@@ -175,8 +175,8 @@ if (!empty($data->email) && !empty($data->password)) {
     $email = mysqli_real_escape_string($link, $data->email);
     $password = $data->password;
 
-    // Join users and business_details tables to get shop_type on login
-    $sql = "SELECT u.id, u.email, u.password, bd.shop_type 
+    // Join users and business_details tables to get business info on login
+    $sql = "SELECT u.id, u.email, u.password, bd.shop_type, bd.business_name, bd.business_address 
             FROM users u
             LEFT JOIN business_details bd ON u.id = bd.user_id
             WHERE u.email = ?";
@@ -196,7 +196,9 @@ if (!empty($data->email) && !empty($data->password)) {
                 echo json_encode([
                     "message" => "Successful login.",
                     "token" => $token,
-                    "shopType" => $row['shop_type'] // Send shopType to frontend
+                    "shopType" => $row['shop_type'],
+                    "businessName" => $row['business_name'],
+                    "businessAddress" => $row['business_address']
                 ]);
             } else {
                 http_response_code(401); // Unauthorized

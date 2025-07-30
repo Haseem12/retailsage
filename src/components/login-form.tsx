@@ -47,6 +47,13 @@ export default function LoginForm() {
         localStorage.removeItem('shopType');
       }
 
+      if (data.businessName) {
+        localStorage.setItem('businessName', data.businessName);
+      }
+      if (data.businessAddress) {
+        localStorage.setItem('businessAddress', data.businessAddress);
+      }
+
       if (data.shopType === 'Fuel Station') {
         router.push('/dashboard/fuel-management');
       } else {
