@@ -72,14 +72,14 @@ export default function OnboardingPage() {
             return (
             <CarouselItem key={index} className="h-full">
               <div className="z-10 flex flex-col text-center w-full h-full p-4">
-                  <header className="flex-shrink-0">
+                  <header className="flex-shrink-0 h-20">
                     <div className="flex items-center justify-center gap-2 my-6">
                         <RetailLabLogo className="w-10 h-10 text-white" />
                         <h1 className="text-4xl font-bold font-headline text-white">RetailLab</h1>
                     </div>
                   </header>
 
-                  <main className="flex flex-col items-center justify-center flex-1 text-white p-6 gap-4">
+                  <main className="flex flex-col items-center flex-1 text-white p-6 gap-4 pt-16">
                       <Icon className="w-24 h-24 text-primary mb-4" />
                       <h2 className="text-2xl font-bold">{step.title}</h2>
                       <p className="text-white/80 max-w-sm">{step.description}</p>
