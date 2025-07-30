@@ -4,6 +4,8 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, Di
 import { Button } from '@/components/ui/button';
 import RetailLabLogo from './retaillab-logo';
 import { useEffect, useState } from 'react';
+import { Input } from './ui/input';
+import { Label } from './ui/label';
 
 export interface ReceiptItem {
   name: string;
@@ -19,14 +21,25 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ isOpen, onClose, items, subtotal }: ReceiptModalProps) {
-  const [businessDetails, setBusinessDetails] = useState({ name: 'RetailLab', address: '123 Market St, Anytown, USA' });
+  const [businessDetails, setBusinessDetails] = useState({ name: 'RetailLab', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
+  const [showDetailsForm, setShowDetailsForm] = useState(false);
   
+  const [rcInput, setRcInput] = useState('');
+  const [phoneInput, setPhoneInput] = useState('');
+
   useEffect(() => {
     if (isOpen) {
-      const name = localStorage.getItem('businessName');
-      const address = localStorage.getItem('businessAddress');
-      if (name && address) {
-        setBusinessDetails({ name, address });
+      const name = localStorage.getItem('businessName') || 'RetailLab';
+      const address = localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA';
+      const rcNumber = localStorage.getItem('rcNumber') || '';
+      const phoneNumber = localStorage.getItem('phoneNumber') || '';
+
+      setBusinessDetails({ name, address, rcNumber, phoneNumber });
+
+      if (!rcNumber || !phoneNumber) {
+        setShowDetailsForm(true);
+      } else {
+        setShowDetailsForm(false);
       }
     }
   }, [isOpen]);
@@ -36,51 +49,90 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal }: Recei
   const date = new Date();
 
   const handlePrint = () => {
-    // This is a browser API and will trigger the print dialog
     window.print();
   }
+
+  const handleSaveDetails = () => {
+    localStorage.setItem('rcNumber', rcInput);
+    localStorage.setItem('phoneNumber', phoneInput);
+    setBusinessDetails(prev => ({ ...prev, rcNumber: rcInput, phoneNumber: phoneInput }));
+    setShowDetailsForm(false);
+    setRcInput('');
+    setPhoneInput('');
+  }
+  
+  const renderDetailsForm = () => (
+    <>
+       <DialogHeader>
+        <DialogTitle>Complete Business Details</DialogTitle>
+        <DialogDescription>
+          Please provide your RC Number and Phone Number to include them on the receipt.
+        </DialogDescription>
+      </DialogHeader>
+      <div className="space-y-4 py-4">
+        <div className="space-y-2">
+          <Label htmlFor="rcNumber">RC Number</Label>
+          <Input id="rcNumber" value={rcInput} onChange={(e) => setRcInput(e.target.value)} placeholder="e.g. 123456" />
+        </div>
+        <div className="space-y-2">
+          <Label htmlFor="phoneNumber">Phone Number</Label>
+          <Input id="phoneNumber" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="e.g. 080-1234-5678" />
+        </div>
+      </div>
+      <DialogFooter>
+        <Button onClick={handleSaveDetails}>Save and Continue</Button>
+      </DialogFooter>
+    </>
+  );
+
+  const renderReceiptContent = () => (
+    <>
+      <div className="print-content">
+        <DialogHeader className="text-center items-center">
+          <RetailLabLogo className="w-8 h-8 my-2 print:text-black"/>
+          <DialogTitle className="font-sans text-lg font-bold">{businessDetails.name}</DialogTitle>
+          <DialogDescription className="print:text-gray-600">{businessDetails.address}</DialogDescription>
+          <div className="text-xs print:text-gray-600">
+            {businessDetails.rcNumber && <p>RC: {businessDetails.rcNumber}</p>}
+            {businessDetails.phoneNumber && <p>Tel: {businessDetails.phoneNumber}</p>}
+            <p>{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
+          </div>
+        </DialogHeader>
+        <div className="border-t border-b border-dashed py-2 my-2 space-y-1">
+          {items.map((item) => (
+            <div key={item.name} className="flex justify-between">
+              <span>{item.quantity}x {item.name}</span>
+              <span>₦{(item.quantity * item.price).toFixed(2)}</span>
+            </div>
+          ))}
+        </div>
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span>Subtotal:</span>
+            <span>₦{subtotal.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between">
+            <span>Tax (8%):</span>
+            <span>₦{tax.toFixed(2)}</span>
+          </div>
+          <div className="flex justify-between font-bold text-base border-t border-dashed pt-1 mt-1">
+            <span>TOTAL:</span>
+            <span>₦{total.toFixed(2)}</span>
+          </div>
+        </div>
+        <p className="text-center text-xs mt-4 print:text-gray-600">Thank you for your purchase!</p>
+      </div>
+      <DialogFooter className="mt-4 print:hidden">
+        <Button onClick={handlePrint} variant="outline">Print</Button>
+        <Button onClick={onClose} className="bg-accent text-accent-foreground hover:bg-accent/90">Close</Button>
+      </DialogFooter>
+    </>
+  );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-sm font-mono text-sm bg-card/90 backdrop-blur-sm print:shadow-none print:border-none print:bg-white print:text-black">
-        <div className="print-content">
-          <DialogHeader className="text-center items-center">
-            <RetailLabLogo className="w-8 h-8 my-2 print:text-black"/>
-            <DialogTitle className="font-sans text-lg font-bold">{businessDetails.name}</DialogTitle>
-            <DialogDescription className="print:text-gray-600">{businessDetails.address}</DialogDescription>
-            <div className="text-xs print:text-gray-600">
-              <p>RC: 123456 | Tel: 080-1234-5678</p>
-              <p>{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
-            </div>
-          </DialogHeader>
-          <div className="border-t border-b border-dashed py-2 my-2 space-y-1">
-            {items.map((item) => (
-              <div key={item.name} className="flex justify-between">
-                <span>{item.quantity}x {item.name}</span>
-                <span>₦{(item.quantity * item.price).toFixed(2)}</span>
-              </div>
-            ))}
-          </div>
-          <div className="space-y-1">
-            <div className="flex justify-between">
-              <span>Subtotal:</span>
-              <span>₦{subtotal.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between">
-              <span>Tax (8%):</span>
-              <span>₦{tax.toFixed(2)}</span>
-            </div>
-            <div className="flex justify-between font-bold text-base border-t border-dashed pt-1 mt-1">
-              <span>TOTAL:</span>
-              <span>₦{total.toFixed(2)}</span>
-            </div>
-          </div>
-          <p className="text-center text-xs mt-4 print:text-gray-600">Thank you for your purchase!</p>
-        </div>
-        <DialogFooter className="mt-4 print:hidden">
-          <Button onClick={handlePrint} variant="outline">Print</Button>
-          <Button onClick={onClose} className="bg-accent text-accent-foreground hover:bg-accent/90">Close</Button>
-        </DialogFooter>
+        {showDetailsForm ? renderDetailsForm() : renderReceiptContent()}
       </DialogContent>
     </Dialog>
   );
