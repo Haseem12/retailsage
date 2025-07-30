@@ -12,7 +12,6 @@ import type { ReceiptItem } from '@/components/receipt-modal';
 interface Sale {
   items: ReceiptItem[];
   subtotal: number;
-  tax: number;
   total: number;
   date: string;
 }

@@ -49,8 +49,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
     setIsAndroid(/android/i.test(navigator.userAgent));
   }, [isOpen]);
 
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const total = subtotal;
   const date = new Date();
 
   const handlePrint = () => {
@@ -128,10 +127,6 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
           <div className="flex justify-between">
             <span>Subtotal:</span>
             <span>₦{subtotal.toFixed(2)}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Tax (8%):</span>
-            <span>₦{tax.toFixed(2)}</span>
           </div>
           <div className="flex justify-between font-bold text-base border-t border-dashed pt-1 mt-1">
             <span>TOTAL:</span>

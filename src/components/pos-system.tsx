@@ -27,7 +27,6 @@ type CartItem = Product & { quantity: number };
 interface Sale {
   items: ReceiptItem[];
   subtotal: number;
-  tax: number;
   total: number;
   date: string;
 }
@@ -46,9 +45,10 @@ export default function PosSystem() {
   useEffect(() => {
     setIsClient(true);
     if(products.length > 0) {
-      setActiveTab(products[0].category)
+      const initialCategory = products.find(p => p.category)?.category || 'pos';
+      setActiveTab(initialCategory !== 'pos' ? initialCategory : (products[0]?.category || 'pos'));
     }
-  }, []);
+  }, [products]);
   
   const getProductStock = (productId: number) => {
     const product = products.find(p => p.id === productId);
@@ -88,8 +88,7 @@ export default function PosSystem() {
   };
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
-  const tax = subtotal * 0.08;
-  const total = subtotal + tax;
+  const total = subtotal;
   
   const categories = [...new Set(products.map(p => p.category))];
 
@@ -126,7 +125,6 @@ export default function PosSystem() {
     const newSale: Sale = {
       items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
       subtotal,
-      tax,
       total,
       date: new Date().toISOString(),
     };
@@ -221,22 +219,16 @@ export default function PosSystem() {
   );
 
   return (
-    <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 items-start">
-      <div className="xl:col-span-2">
-        <Card>
-          <CardHeader>
-            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="pos" disabled={products.length === 0}>Point of Sale</TabsTrigger>
-                <TabsTrigger value="calc">Calculator</TabsTrigger>
-              </TabsList>
-            </Tabs>
-          </CardHeader>
-          <CardContent>
-            {activeTab === 'calc' ? <CalculatorTab /> : <ProductGrid />}
-          </CardContent>
-        </Card>
-      </div>
+    <div className="grid grid-cols-1 gap-8 items-start">
+      <Card>
+        <CardHeader>
+            <CardTitle>Point of Sale</CardTitle>
+        </CardHeader>
+        <CardContent>
+             {activeTab === 'calc' ? <CalculatorTab /> : <ProductGrid />}
+        </CardContent>
+      </Card>
+      
       <div className="xl:col-span-1">
         <Card>
           <CardHeader>
@@ -271,10 +263,6 @@ export default function PosSystem() {
               <div className="flex justify-between text-sm">
                 <p>Subtotal</p>
                 <p>₦{subtotal.toFixed(2)}</p>
-              </div>
-              <div className="flex justify-between text-sm">
-                <p>Tax (8%)</p>
-                <p>₦{tax.toFixed(2)}</p>
               </div>
               <div className="flex justify-between font-bold text-lg">
                 <p>Total</p>

@@ -19,57 +19,13 @@ export function GET(request: NextRequest) {
     }
 
     // In a real app, you would fetch sale data from a database using the saleId.
-    // Since we are simulating, we'll try to retrieve it from where it was stored (e.g., sessionStorage).
-    // NOTE: This server-side route CANNOT access client-side sessionStorage.
-    // The data must be fetched on the client and passed to the print URL.
-    // The 'my.bluetoothprint.scheme' call is initiated from the client, which can access its own storage.
-    // The app on the phone will then make a GET request to this URL.
-    // This architecture requires the data to be publicly accessible or passed differently.
+    // This is a simulation, so we can't access client-side sessionStorage here on the server.
+    // The architecture relies on the client initiating the `my.bluetoothprint.scheme` call,
+    // which then makes the GET request. However, this server route has no access to that client's session.
     
-    // For this simulation to work, we'll assume the client has stored the data and can reconstruct the JSON.
-    // The best way to do this with the current setup is to have the client-side get the item,
-    // and then construct the final JSON itself. But since the print app makes the request, that's not possible.
-
-    // A workaround: the client puts the data in sessionStorage, we retrieve it from the client via this API.
-    // This is not a standard pattern. A better pattern is to save sales to a DB.
-    // To make this demo work without a DB, we have the POS system save the sale to session storage.
-    // The client will then navigate to this API route. But wait, the Android APP navigates to the route.
-    // The app does not have the browser's session storage.
-
-    // Let's change the strategy. The client will fetch this URL, which returns a script.
-    // The script will then retrieve from session storage and create the JSON.
-    // No, the print app expects a direct JSON response.
-
-    // The most straightforward way to make this work for the demo is to have a "get last sale" concept.
-    // Or, more correctly, pass the data in the URL. But that can be long.
-    
-    // The `pos-system.tsx` now saves the sale to sessionStorage. The client can read it.
-    // We'll return a simple response. The logic to create the JSON must happen client-side before calling the print intent.
-    // Let's adjust the `receipt-modal` to construct the JSON.
-    // No, the instructions say the response URL must contain the JSON.
-
-    // Okay, new plan. We'll have to rely on the fact that the client code *could* fetch this.
-    // A proper implementation would have a database.
-    // To make the provided instructions work, let's create a dynamic script on the client.
-    
-    // Let's stick to the user's provided PHP example as a guide. It directly echoes a JSON.
-    // This API route will do the same. It needs data. `pos-system` saves data to sessionStorage with a key of `saleId`.
-    // The `my.bluetoothprint.scheme` call is made. The app on the phone has no access to that session storage.
-    
-    // The data has to be passed in the URL. It's the only way.
-    // It will make the URL very long. Let's try it.
-    // Let's reconsider. The PHP example shows a server-side script generating JSON. It implies data is on the server.
-    // Since we don't have a DB, our "server" (this API route) has no state.
-    
-    // Final attempt at a working simulation:
-    // The client will get the data from sessionStorage.
-    // It will create a base64 encoded string of the JSON payload.
-    // It will call the print intent with `.../api/print?data=<base64_payload>`
-    // This API route will decode the payload and return it as JSON.
-    // This feels too complex to implement right now.
-
-    // Let's create a *static* example response, as per the user's PHP file, but with our data structure.
-    // Then I can explain that to make it dynamic, the data needs to be passed to this API route.
+    // To make this work, we will construct a sample payload. In a real scenario,
+    // you would either pass all data in the URL (which can be long and complex) or
+    // preferably store sales in a database and fetch them here using the saleId.
 
     const sampleData = {
         businessDetails: {
@@ -83,13 +39,11 @@ export function GET(request: NextRequest) {
             { name: "Whole Milk", quantity: 1, price: 3.0 }
         ],
         subtotal: 8.0,
-        tax: 0.64,
-        total: 8.64,
+        total: 8.0, // No tax
         date: new Date().toISOString()
     };
     
-    // This is where we'd fetch the actual sale data from a database using `saleId`
-    // For now, we use sample data.
+    // We use sample data because this route cannot access the sale data from sessionStorage.
     const sale = sampleData;
 
     const printPayload: PrintEntry[] = [];
@@ -156,7 +110,6 @@ export function GET(request: NextRequest) {
 
     // Totals
     printPayload.push({ type: 0, content: `Subtotal: N${sale.subtotal.toFixed(2)}`, bold: 0, align: 2, format: 0 });
-    printPayload.push({ type: 0, content: `Tax (8%): N${sale.tax.toFixed(2)}`, bold: 0, align: 2, format: 0 });
     printPayload.push({ type: 0, content: `TOTAL: N${sale.total.toFixed(2)}`, bold: 1, align: 2, format: 1 });
     
     // Footer
