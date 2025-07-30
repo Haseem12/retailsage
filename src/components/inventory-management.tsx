@@ -30,49 +30,153 @@ export default function InventoryManagement() {
   const [products, setProducts] = useLocalStorage<Product[]>('products', PRODUCTS);
   const [isClient, setIsClient] = useState(false);
 
-  // Form state for new product
-  const [newProductName, setNewProductName] = useState('');
-  const [newProductPrice, setNewProductPrice] = useState('');
-  const [newProductStock, setNewProductStock] = useState('');
-  const [newProductCategory, setNewProductCategory] = useState('Groceries');
-  const [newProductIcon, setNewProductIcon] = useState('Apple');
+  // Form state for new/edit product
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  
+  const [productName, setProductName] = useState('');
+  const [productPrice, setProductPrice] = useState('');
+  const [productStock, setProductStock] = useState('');
+  const [productCategory, setProductCategory] = useState('Groceries');
+  const [productIcon, setProductIcon] = useState('Apple');
+
+  const [additionalStock, setAdditionalStock] = useState('');
 
   useEffect(() => {
     setIsClient(true);
   }, []);
 
+  const resetForm = () => {
+    setProductName('');
+    setProductPrice('');
+    setProductStock('');
+    setAdditionalStock('');
+    setSelectedProduct(null);
+  }
+
   const handleAddProduct = () => {
-    if (!newProductName || !newProductPrice || !newProductStock) {
+    if (!productName || !productPrice || !productStock) {
       alert('Please fill in all fields.');
       return;
     }
     const newProduct: Product = {
       id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      name: newProductName,
-      price: parseFloat(newProductPrice),
-      stock: parseInt(newProductStock, 10),
-      category: newProductCategory,
-      icon: newProductIcon,
+      name: productName,
+      price: parseFloat(productPrice),
+      stock: parseInt(productStock, 10),
+      category: productCategory,
+      icon: productIcon,
     };
     setProducts([...products, newProduct]);
     
-    // Reset form and close dialog
-    setNewProductName('');
-    setNewProductPrice('');
-    setNewProductStock('');
+    resetForm();
     setIsAddDialogOpen(false);
   };
+
+  const handleEditProduct = () => {
+    if (!selectedProduct) return;
+
+    const updatedProducts = products.map(p => {
+      if (p.id === selectedProduct.id) {
+        return {
+          ...p,
+          name: productName,
+          price: parseFloat(productPrice),
+          stock: p.stock + (parseInt(additionalStock, 10) || 0)
+        }
+      }
+      return p;
+    });
+
+    setProducts(updatedProducts);
+    resetForm();
+    setIsEditDialogOpen(false);
+  }
 
   const handleDeleteProduct = (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
       setProducts(products.filter(p => p.id !== id));
     }
   };
+  
+  const openEditDialog = (product: Product) => {
+    setSelectedProduct(product);
+    setProductName(product.name);
+    setProductPrice(String(product.price));
+    setProductStock(String(product.stock));
+    setIsEditDialogOpen(true);
+  }
 
   if (!isClient) {
     return null; // Don't render on the server
   }
+
+  const AddProductDialog = () => (
+    <Dialog open={isAddDialogOpen} onOpenChange={(isOpen) => { setIsAddDialogOpen(isOpen); if(!isOpen) resetForm(); }}>
+      <DialogTrigger asChild>
+        <Button>
+          <PlusCircle className="mr-2" />
+          Add Product
+        </Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Add New Product</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="name" className="text-right">Name</Label>
+            <Input id="name" value={productName} onChange={e => setProductName(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="price" className="text-right">Price (₦)</Label>
+            <Input id="price" type="number" value={productPrice} onChange={e => setProductPrice(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="stock" className="text-right">Initial Stock</Label>
+            <Input id="stock" type="number" value={productStock} onChange={e => setProductStock(e.target.value)} className="col-span-3" />
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <Button onClick={handleAddProduct}>Add Product</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+
+  const EditProductDialog = () => (
+     <Dialog open={isEditDialogOpen} onOpenChange={(isOpen) => { setIsEditDialogOpen(isOpen); if(!isOpen) resetForm(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Edit Product / Add Stock</DialogTitle>
+        </DialogHeader>
+        <div className="grid gap-4 py-4">
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="edit-name" className="text-right">Name</Label>
+            <Input id="edit-name" value={productName} onChange={e => setProductName(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="edit-price" className="text-right">Price (₦)</Label>
+            <Input id="edit-price" type="number" value={productPrice} onChange={e => setProductPrice(e.target.value)} className="col-span-3" />
+          </div>
+          <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="current-stock" className="text-right">Current Stock</Label>
+            <Input id="current-stock" type="number" value={productStock} disabled className="col-span-3" />
+          </div>
+           <div className="grid grid-cols-4 items-center gap-4">
+            <Label htmlFor="add-stock" className="text-right">Add Stock</Label>
+            <Input id="add-stock" type="number" placeholder="e.g. 50" value={additionalStock} onChange={e => setAdditionalStock(e.target.value)} className="col-span-3" />
+          </div>
+        </div>
+        <DialogFooter>
+          <DialogClose asChild><Button variant="outline">Cancel</Button></DialogClose>
+          <Button onClick={handleEditProduct}>Save Changes</Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  )
 
   return (
     <Card>
@@ -81,39 +185,7 @@ export default function InventoryManagement() {
           <CardTitle>Inventory Management</CardTitle>
           <CardDescription>View, add, and manage your product stock.</CardDescription>
         </div>
-        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-          <DialogTrigger asChild>
-            <Button>
-              <PlusCircle className="mr-2" />
-              Add Product
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Add New Product</DialogTitle>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="name" className="text-right">Name</Label>
-                <Input id="name" value={newProductName} onChange={e => setNewProductName(e.target.value)} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="price" className="text-right">Price (₦)</Label>
-                <Input id="price" type="number" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} className="col-span-3" />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="stock" className="text-right">Stock</Label>
-                <Input id="stock" type="number" value={newProductStock} onChange={e => setNewProductStock(e.target.value)} className="col-span-3" />
-              </div>
-            </div>
-            <DialogFooter>
-              <DialogClose asChild>
-                <Button variant="outline">Cancel</Button>
-              </DialogClose>
-              <Button onClick={handleAddProduct}>Add Product</Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <AddProductDialog />
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -144,9 +216,9 @@ export default function InventoryManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                           <DropdownMenuItem disabled>
+                           <DropdownMenuItem onClick={() => openEditDialog(product)}>
                             <Edit className="mr-2 h-4 w-4" />
-                            <span>Edit (Soon)</span>
+                            <span>Edit / Add Stock</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteProduct(product.id)}
@@ -163,13 +235,14 @@ export default function InventoryManagement() {
               ) : (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">
-                    No products found.
+                    No products found. Add one to get started.
                   </TableCell>
                 </TableRow>
               )}
             </TableBody>
           </Table>
         </div>
+        <EditProductDialog />
       </CardContent>
     </Card>
   );
