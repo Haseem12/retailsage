@@ -41,13 +41,13 @@ export default function DashboardLayout({
 
   useEffect(() => {
     if (!loading && !user) {
-      router.push('/');
+      router.push('/login');
     }
   }, [user, loading, router]);
 
   const handleLogout = async () => {
     await signOut(auth);
-    router.push('/');
+    router.push('/login');
   };
   
   if (loading || !user) {

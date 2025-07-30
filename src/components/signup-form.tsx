@@ -37,7 +37,7 @@ export default function SignupForm() {
         title: 'Account Created',
         description: 'Welcome to RetailLab! Please log in.',
       });
-      router.push('/');
+      router.push('/login');
     } catch (error: any) {
       toast({
         variant: 'destructive',
@@ -91,7 +91,7 @@ export default function SignupForm() {
         </CardContent>
       </form>
       <CardFooter className="text-center text-sm">
-        <p>Already have an account? <Link href="/" className="text-primary hover:underline">Log in</Link></p>
+        <p>Already have an account? <Link href="/login" className="text-primary hover:underline">Log in</Link></p>
       </CardFooter>
     </Card>
   );
