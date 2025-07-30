@@ -4,10 +4,10 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 export default function SettingsPage() {
   return (
     <div className="space-y-8">
-      <Card>
+      <Card className="bg-card/80 backdrop-blur-sm">
         <CardHeader>
           <CardTitle>Subscription Plan</CardTitle>
-          <CardDescription>Manage your RetailSage subscription plan and features.</CardDescription>
+          <CardDescription>Manage your AgriLab subscription plan and features.</CardDescription>
         </CardHeader>
         <CardContent>
           <SubscriptionTiers />

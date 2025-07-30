@@ -13,13 +13,14 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { Gem, LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
+import { LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useAuthState } from 'react-firebase-hooks/auth';
 import { auth } from '@/lib/firebase';
 import { signOut } from 'firebase/auth';
 import { useEffect } from 'react';
+import AgriLabLogo from '@/components/agrilab-logo';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -63,8 +64,8 @@ export default function DashboardLayout({
         <SidebarContent>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <Gem className="size-6 text-primary" />
-              <span className="text-lg font-semibold font-headline">RetailSage</span>
+              <AgriLabLogo className="size-7" />
+              <span className="text-xl font-semibold font-headline">AgriLab</span>
             </div>
           </SidebarHeader>
           <SidebarMenu>

@@ -11,11 +11,11 @@ const tiers = [
     name: 'Freemium',
     price: '$0',
     period: '/ month',
-    description: 'Essential tools to get your retail business started.',
+    description: 'Essential tools to get your farm started.',
     features: [
-      'Basic Point-of-Sale',
-      'Sales Tracking (7-day history)',
-      '1 User Account',
+      'Basic Crop Monitoring',
+      'Weather Forecasts (3-day)',
+      '1 Farm Location',
       'Community Support',
     ],
     cta: 'Stay on Freemium',
@@ -24,13 +24,13 @@ const tiers = [
     name: 'Premium',
     price: '$79',
     period: '/ month',
-    description: 'Advanced features for growing businesses and enterprises.',
+    description: 'Advanced features for growing farms and enterprises.',
     features: [
-      'Advanced Point-of-Sale',
-      'Unlimited Sales History',
-      'Unlimited User Accounts',
-      'AI Risk Analysis Tool',
-      'Fuel Management Dashboard',
+      'Advanced Crop & Soil Analysis',
+      'AI-Powered Risk Assessment',
+      'Unlimited Farm Locations',
+      'Automated Irrigation Control',
+      'Yield Prediction Models',
       'Priority Email & Phone Support',
     ],
     cta: 'Upgrade to Premium',
@@ -56,7 +56,7 @@ export default function SubscriptionTiers() {
         <Card
           key={tier.name}
           className={cn(
-            'flex flex-col transition-all',
+            'flex flex-col transition-all bg-card/80 backdrop-blur-sm',
             tier.isPrimary && 'border-primary shadow-lg',
             activeTier === tier.name && 'ring-2 ring-primary'
           )}

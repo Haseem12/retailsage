@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Gem, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import AgriLabLogo from './agrilab-logo';
 
 export default function SignupForm() {
   const [email, setEmail] = useState('');
@@ -34,7 +35,7 @@ export default function SignupForm() {
       await createUserWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Account Created',
-        description: 'Welcome to RetailSage! Please log in.',
+        description: 'Welcome to AgriLab! Please log in.',
       });
       router.push('/');
     } catch (error: any) {
@@ -49,14 +50,14 @@ export default function SignupForm() {
   };
 
   return (
-    <Card className="w-full max-w-sm shadow-2xl">
+    <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
-        <div className="flex justify-center items-center gap-2 mb-2">
-            <Gem className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold font-headline">RetailSage</h1>
+        <div className="flex justify-center items-center gap-2 mb-4">
+            <AgriLabLogo className="w-10 h-10" />
+            <h1 className="text-4xl font-bold font-headline">AgriLab</h1>
         </div>
         <CardTitle>Create an Account</CardTitle>
-        <CardDescription>Join us and start managing your retail business.</CardDescription>
+        <CardDescription>Join us and get AI-powered agricultural insights.</CardDescription>
       </CardHeader>
       <form onSubmit={handleSignup}>
         <CardContent className="flex flex-col gap-4">
@@ -66,6 +67,7 @@ export default function SignupForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="bg-background/70"
           />
           <Input
             type="password"
@@ -73,6 +75,7 @@ export default function SignupForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            className="bg-background/70"
           />
           <Input
             type="password"
@@ -80,6 +83,7 @@ export default function SignupForm() {
             value={confirmPassword}
             onChange={(e) => setConfirmPassword(e.target.value)}
             required
+            className="bg-background/70"
           />
           <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading}>
              {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Sign Up'}

@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
-import { Gem, Loader2 } from 'lucide-react';
+import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
 import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
+import AgriLabLogo from './agrilab-logo';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -25,7 +26,7 @@ export default function LoginForm() {
       await signInWithEmailAndPassword(auth, email, password);
       toast({
         title: 'Login Successful',
-        description: 'Welcome back to RetailSage!',
+        description: 'Welcome back to AgriLab!',
       });
       router.push('/dashboard');
     } catch (error: any) {
@@ -40,14 +41,13 @@ export default function LoginForm() {
   };
 
   return (
-    <Card className="w-full max-w-sm shadow-2xl">
+    <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
-        <div className="flex justify-center items-center gap-2 mb-2">
-            <Gem className="w-8 h-8 text-primary" />
-            <h1 className="text-3xl font-bold font-headline">RetailSage</h1>
+        <div className="flex justify-center items-center gap-2 mb-4">
+            <AgriLabLogo className="w-10 h-10" />
+            <h1 className="text-4xl font-bold font-headline">AgriLab</h1>
         </div>
-        <CardTitle>Welcome Back</CardTitle>
-        <CardDescription>Enter your credentials to access your account.</CardDescription>
+        <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
       </CardHeader>
       <form onSubmit={handleLogin}>
         <CardContent className="flex flex-col gap-4">
@@ -57,6 +57,7 @@ export default function LoginForm() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+            className="bg-background/70"
           />
           <Input
             type="password"
@@ -64,6 +65,7 @@ export default function LoginForm() {
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+             className="bg-background/70"
           />
           <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading}>
             {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Login'}
