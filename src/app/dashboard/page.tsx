@@ -1,6 +1,5 @@
 
 'use client';
-import SalesChart from '@/components/sales-chart';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { TrendingUp, ShoppingCart, Users, Percent } from 'lucide-react';
@@ -99,11 +98,6 @@ export default function DashboardPage() {
           </div>
         </CardContent>
       </Card>
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-3">
-          <SalesChart />
-        </div>
-      </div>
     </div>
   );
 }

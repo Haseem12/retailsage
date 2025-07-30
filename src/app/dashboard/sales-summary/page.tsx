@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import type { ReceiptItem } from '@/components/receipt-modal';
+import SalesChart from '@/components/sales-chart';
 
 interface Sale {
   items: ReceiptItem[];
@@ -108,6 +109,7 @@ export default function SalesSummaryPage() {
           </ResponsiveContainer>
         </CardContent>
       </Card>
+      <SalesChart />
     </div>
   );
 }

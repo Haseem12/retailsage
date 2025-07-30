@@ -3,13 +3,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip } from 'recharts';
 
 const data = [
-  { name: 'Mon', total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: 'Tue', total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: 'Wed', total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: 'Thu', total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: 'Fri', total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: 'Sat', total: Math.floor(Math.random() * 5000) + 1000 },
-  { name: 'Sun', total: Math.floor(Math.random() * 5000) + 1000 },
+  { name: 'Mon', total: 4250 },
+  { name: 'Tue', total: 3100 },
+  { name: 'Wed', total: 5200 },
+  { name: 'Thu', total: 2800 },
+  { name: 'Fri', total: 6100 },
+  { name: 'Sat', total: 7500 },
+  { name: 'Sun', total: 6800 },
 ];
 
 export default function SalesChart() {
@@ -34,11 +34,12 @@ export default function SalesChart() {
               fontSize={12}
               tickLine={false}
               axisLine={false}
-              tickFormatter={(value) => `$${value}`}
+              tickFormatter={(value) => `₦${value}`}
             />
             <Tooltip
               cursor={{ fill: 'hsl(var(--muted))' }}
               contentStyle={{ backgroundColor: 'hsl(var(--background))', border: '1px solid hsl(var(--border))' }}
+              formatter={(value: number) => `₦${value.toFixed(2)}`}
             />
             <Bar dataKey="total" fill="hsl(var(--primary))" radius={[4, 4, 0, 0]} />
           </BarChart>
