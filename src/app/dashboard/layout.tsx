@@ -160,14 +160,6 @@ export default function DashboardLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-between p-4 border-b md:hidden">
-          <Link href="/dashboard" className="flex items-center gap-2">
-            <RetailLabLogo className="size-7" />
-            <span className="text-lg font-semibold font-headline">RetailLab</span>
-          </Link>
-          <SidebarTrigger />
-        </header>
-        
         <header className="hidden md:flex items-center justify-end p-2 border-b h-14">
             <div className="flex items-center gap-4">
                 <DropdownMenu>
