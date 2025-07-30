@@ -18,25 +18,25 @@ import { cn } from '@/lib/utils';
 const onboardingSteps = [
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'retail analytics illustration',
+    aiHint: 'retail analytics',
     title: 'Welcome to RetailLab',
     description: 'Your all-in-one solution for retail management and AI-powered insights.',
   },
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'inventory management illustration',
+    aiHint: 'inventory management',
     title: 'Smart Inventory',
     description: 'Track stock levels, manage inventory, and reduce spoilage with our intelligent tools.',
   },
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'sales dashboard illustration',
+    aiHint: 'sales dashboard',
     title: 'AI-Driven Analytics',
     description: 'Leverage the power of AI to understand sales trends and identify risks before they happen.',
   },
   {
     image: 'https://placehold.co/600x400.png',
-    aiHint: 'mobile point of sale illustration',
+    aiHint: 'mobile pointofsale',
     title: 'Point of Sale, Anywhere',
     description: 'A modern, easy-to-use POS system that works on any device.',
   },
