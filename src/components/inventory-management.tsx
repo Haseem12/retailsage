@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -7,14 +6,13 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { type Product } from '@/lib/types';
-import { PlusCircle, MoreHorizontal, Edit, Trash2, Printer } from 'lucide-react';
+import { PlusCircle, MoreHorizontal, Edit, Trash2, Printer, Loader2 } from 'lucide-react';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { useLocalStorage } from '@/hooks/use-local-storage';
 import {
   Dialog,
   DialogContent,
@@ -26,11 +24,16 @@ import {
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import ProductLabelModal from './product-label-modal';
+import { useToast } from '@/hooks/use-toast';
+
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 export default function InventoryManagement() {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loading, setLoading] = useState(true);
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
+  const { toast } = useToast();
 
   // State for Edit Product Dialog
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
@@ -44,8 +47,36 @@ export default function InventoryManagement() {
   const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
   const [productForLabel, setProductForLabel] = useState<Product | null>(null);
 
+  const fetchProducts = async () => {
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem('user-token');
+      const response = await fetch(`${API_BASE_URL}/api/products.php?action=read`, {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+      if (data.products) {
+        setProducts(data.products);
+      } else {
+        setProducts([]);
+      }
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error fetching products',
+        description: error.message,
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+  
   useEffect(() => {
     setIsClient(true);
+    fetchProducts();
   }, []);
   
   const resetEditForm = () => {
@@ -56,29 +87,64 @@ export default function InventoryManagement() {
     setSelectedProduct(null);
   }
 
-  const handleEditProduct = () => {
+  const handleEditProduct = async () => {
     if (!selectedProduct) return;
 
-    const updatedProducts = products.map(p => {
-      if (p.id === selectedProduct.id) {
-        return {
-          ...p,
+    try {
+      const token = sessionStorage.getItem('user-token');
+      const response = await fetch(`${API_BASE_URL}/api/products.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'update',
+          id: selectedProduct.id,
           name: editProductName,
           price: parseFloat(editProductPrice),
           stock: (parseInt(currentStock) || 0) + (parseInt(additionalStock, 10) || 0)
-        }
-      }
-      return p;
-    });
+        })
+      });
 
-    setProducts(updatedProducts);
-    resetEditForm();
-    setIsEditDialogOpen(false);
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to update product');
+      
+      toast({ title: "Product Updated", description: `${editProductName} has been updated.`});
+      fetchProducts(); // Refresh products list
+      resetEditForm();
+      setIsEditDialogOpen(false);
+
+    } catch (error: any) {
+      toast({
+        variant: 'destructive',
+        title: 'Error updating product',
+        description: error.message,
+      });
+    }
   }
 
-  const handleDeleteProduct = (id: number) => {
+  const handleDeleteProduct = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
-      setProducts(products.filter(p => p.id !== id));
+      try {
+        const token = sessionStorage.getItem('user-token');
+        const response = await fetch(`${API_BASE_URL}/api/products.php`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+          body: JSON.stringify({ action: 'delete', id })
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to delete product');
+
+        toast({ title: "Product Deleted", description: "The product has been removed."});
+        fetchProducts(); // Refresh
+      } catch (error: any) {
+        toast({
+          variant: 'destructive',
+          title: 'Error deleting product',
+          description: error.message,
+        });
+      }
     }
   };
   
@@ -157,7 +223,13 @@ export default function InventoryManagement() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {products.length > 0 ? (
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    <Loader2 className="mx-auto h-8 w-8 animate-spin" />
+                  </TableCell>
+                </TableRow>
+              ) : products.length > 0 ? (
                 products.map((product) => (
                   <TableRow key={product.id}>
                     <TableCell className="font-medium">{product.name}</TableCell>

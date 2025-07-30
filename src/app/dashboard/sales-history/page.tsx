@@ -1,19 +1,37 @@
-
 'use client';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import type { Sale } from '@/lib/types';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 export default function SalesHistoryPage() {
   const [sales, setSales] = useState<Sale[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const savedSales = localStorage.getItem('sales');
-    if (savedSales) {
-      setSales(JSON.parse(savedSales).sort((a: Sale, b: Sale) => new Date(b.date).getTime() - new Date(a.date).getTime()));
-    }
-  }, []);
+    const fetchSales = async () => {
+      setLoading(true);
+      try {
+        const token = sessionStorage.getItem('user-token');
+        const response = await fetch(`${API_BASE_URL}/api/sales.php?action=read`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to fetch sales');
+        setSales(data.sales.sort((a: Sale, b: Sale) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error fetching sales history', description: error.message });
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchSales();
+  }, [toast]);
 
   return (
     <Card>
@@ -31,7 +49,13 @@ export default function SalesHistoryPage() {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {sales.length > 0 ? (
+            {loading ? (
+              <TableRow>
+                <TableCell colSpan={3} className="text-center h-24">
+                  <Loader2 className="mx-auto h-8 w-8 animate-spin" />
+                </TableCell>
+              </TableRow>
+            ) : sales.length > 0 ? (
               sales.map((sale, index) => (
                 <TableRow key={index}>
                   <TableCell>{new Date(sale.date).toLocaleString()}</TableCell>

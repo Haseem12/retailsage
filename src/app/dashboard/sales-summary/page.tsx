@@ -1,10 +1,13 @@
-
 'use client';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
 import type { Sale } from '@/lib/types';
 import SalesChart from '@/components/sales-chart';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
+
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 interface ProductSale {
   name: string;
@@ -17,41 +20,61 @@ export default function SalesSummaryPage() {
   const [totalSales, setTotalSales] = useState(0);
   const [bestSelling, setBestSelling] = useState<ProductSale | null>(null);
   const [productSales, setProductSales] = useState<ProductSale[]>([]);
+  const [loading, setLoading] = useState(true);
+  const { toast } = useToast();
 
   useEffect(() => {
-    const savedSales = localStorage.getItem('sales');
-    if (savedSales) {
-      const sales: Sale[] = JSON.parse(savedSales);
-      
-      const totalRev = sales.reduce((acc, sale) => acc + sale.total, 0);
-      setTotalRevenue(totalRev);
-      setTotalSales(sales.length);
-
-      const productData: { [key: string]: { unitsSold: number, revenue: number } } = {};
-
-      sales.forEach(sale => {
-        sale.items.forEach(item => {
-          if (!productData[item.name]) {
-            productData[item.name] = { unitsSold: 0, revenue: 0 };
-          }
-          productData[item.name].unitsSold += item.quantity;
-          productData[item.name].revenue += item.quantity * item.price;
+    const fetchSalesSummary = async () => {
+      setLoading(true);
+      try {
+        const token = sessionStorage.getItem('user-token');
+        const response = await fetch(`${API_BASE_URL}/api/sales.php?action=read`, {
+          headers: { 'Authorization': `Bearer ${token}` }
         });
-      });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.message || 'Failed to fetch sales summary');
+        const sales: Sale[] = data.sales || [];
+        
+        const totalRev = sales.reduce((acc, sale) => acc + sale.total, 0);
+        setTotalRevenue(totalRev);
+        setTotalSales(sales.length);
 
-      const productSalesArray = Object.entries(productData).map(([name, data]) => ({
-        name,
-        ...data
-      }));
-      
-      setProductSales(productSalesArray);
+        const productData: { [key: string]: { unitsSold: number, revenue: number } } = {};
 
-      if(productSalesArray.length > 0) {
-        const best = productSalesArray.reduce((prev, current) => (prev.unitsSold > current.unitsSold) ? prev : current);
-        setBestSelling(best);
+        sales.forEach(sale => {
+          sale.items.forEach(item => {
+            if (!productData[item.name]) {
+              productData[item.name] = { unitsSold: 0, revenue: 0 };
+            }
+            productData[item.name].unitsSold += item.quantity;
+            productData[item.name].revenue += item.quantity * item.price;
+          });
+        });
+
+        const productSalesArray = Object.entries(productData).map(([name, data]) => ({
+          name,
+          ...data
+        }));
+        
+        setProductSales(productSalesArray);
+
+        if(productSalesArray.length > 0) {
+          const best = productSalesArray.reduce((prev, current) => (prev.unitsSold > current.unitsSold) ? prev : current);
+          setBestSelling(best);
+        }
+      } catch (error: any) {
+        toast({ variant: 'destructive', title: 'Error fetching summary', description: error.message });
+      } finally {
+        setLoading(false);
       }
-    }
-  }, []);
+    };
+    
+    fetchSalesSummary();
+  }, [toast]);
+
+  if (loading) {
+    return <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+  }
 
   return (
     <div className="space-y-8">

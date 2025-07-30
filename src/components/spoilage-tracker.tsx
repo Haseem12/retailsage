@@ -1,7 +1,5 @@
-
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useLocalStorage } from "@/hooks/use-local-storage";
 import { Product, SpoilageEvent } from "@/lib/types";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,19 +7,50 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
-import { Trash2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Trash2, Loader2 } from "lucide-react";
+
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 export default function SpoilageTracker() {
-    const [spoilage, setSpoilage] = useLocalStorage<SpoilageEvent[]>('spoilage', []);
-    const [products, setProducts] = useLocalStorage<Product[]>('products', []);
+    const [spoilage, setSpoilage] = useState<SpoilageEvent[]>([]);
+    const [products, setProducts] = useState<Product[]>([]);
     const { toast } = useToast();
 
+    const [loading, setLoading] = useState(true);
     const [selectedProductId, setSelectedProductId] = useState('');
     const [quantity, setQuantity] = useState('');
     const [reason, setReason] = useState('');
 
-    const handleAddSpoilage = () => {
+    const fetchData = async () => {
+        setLoading(true);
+        const token = sessionStorage.getItem('user-token');
+        try {
+            const [spoilageRes, productsRes] = await Promise.all([
+                fetch(`${API_BASE_URL}/api/spoilage.php?action=read`, { headers: { 'Authorization': `Bearer ${token}` } }),
+                fetch(`${API_BASE_URL}/api/products.php?action=read`, { headers: { 'Authorization': `Bearer ${token}` } })
+            ]);
+
+            const spoilageData = await spoilageRes.json();
+            const productsData = await productsRes.json();
+
+            if (!spoilageRes.ok) throw new Error(spoilageData.message || 'Failed to fetch spoilage data');
+            if (!productsRes.ok) throw new Error(productsData.message || 'Failed to fetch products');
+
+            setSpoilage(spoilageData.spoilage || []);
+            setProducts(productsData.products || []);
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error fetching data', description: error.message });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchData();
+    }, []);
+
+    const handleAddSpoilage = async () => {
         if (!selectedProductId || !quantity) {
             toast({
                 variant: 'destructive',
@@ -31,56 +60,59 @@ export default function SpoilageTracker() {
             return;
         }
 
-        const product = products.find(p => p.id === parseInt(selectedProductId));
-        if (!product) {
-            toast({
-                variant: 'destructive',
-                title: "Product not found",
+        try {
+            const token = sessionStorage.getItem('user-token');
+            const response = await fetch(`${API_BASE_URL}/api/spoilage.php`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                body: JSON.stringify({
+                    action: 'create',
+                    product_id: parseInt(selectedProductId, 10),
+                    quantity: parseInt(quantity, 10),
+                    reason: reason || 'Unspecified'
+                })
             });
-            return;
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.message || 'Failed to log spoilage');
+            
+            toast({
+                title: "Spoilage Logged",
+                description: `Spoilage for product has been recorded.`,
+            });
+            
+            // Reset form and refetch data
+            setSelectedProductId('');
+            setQuantity('');
+            setReason('');
+            fetchData();
+
+        } catch (error: any) {
+            toast({ variant: 'destructive', title: 'Error logging spoilage', description: error.message });
         }
-        
-        const spoiledQuantity = parseInt(quantity);
-        
-        const newSpoilageEvent: SpoilageEvent = {
-            id: Date.now(),
-            productId: product.id,
-            productName: product.name,
-            quantity: spoiledQuantity,
-            reason: reason || 'Unspecified',
-            date: new Date().toISOString(),
-        };
-
-        // Update spoilage records
-        setSpoilage([...spoilage, newSpoilageEvent]);
-
-        // Update product stock
-        const updatedProducts = products.map(p => {
-            if (p.id === product.id) {
-                return { ...p, stock: Math.max(0, p.stock - spoiledQuantity) };
-            }
-            return p;
-        });
-        setProducts(updatedProducts);
-
-        toast({
-            title: "Spoilage Logged",
-            description: `${spoiledQuantity} units of ${product.name} marked as spoiled.`,
-        });
-
-        // Reset form
-        setSelectedProductId('');
-        setQuantity('');
-        setReason('');
     };
     
-    const handleDeleteSpoilage = (id: number) => {
+    const handleDeleteSpoilage = async (id: number) => {
         if (confirm('Are you sure you want to delete this spoilage record? This will not add the stock back to inventory.')) {
-            setSpoilage(spoilage.filter(s => s.id !== id));
-            toast({
-                title: "Record Deleted",
-                description: "The spoilage record has been removed.",
-            })
+            try {
+                const token = sessionStorage.getItem('user-token');
+                const response = await fetch(`${API_BASE_URL}/api/spoilage.php`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+                    body: JSON.stringify({ action: 'delete', id })
+                });
+
+                const data = await response.json();
+                if (!response.ok) throw new Error(data.message || 'Failed to delete record');
+
+                toast({
+                    title: "Record Deleted",
+                    description: "The spoilage record has been removed.",
+                });
+                fetchData();
+            } catch (error: any) {
+                 toast({ variant: 'destructive', title: 'Error deleting record', description: error.message });
+            }
         }
     }
 
@@ -95,7 +127,7 @@ export default function SpoilageTracker() {
                     <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
                         <div className="space-y-2 col-span-1 md:col-span-2">
                             <Label>Product</Label>
-                             <Select onValueChange={setSelectedProductId} value={selectedProductId}>
+                             <Select onValueChange={setSelectedProductId} value={selectedProductId} disabled={loading}>
                                 <SelectTrigger>
                                     <SelectValue placeholder="Select a product" />
                                 </SelectTrigger>
@@ -132,7 +164,13 @@ export default function SpoilageTracker() {
                             </TableRow>
                         </TableHeader>
                         <TableBody>
-                            {spoilage.length > 0 ? (
+                            {loading ? (
+                                <TableRow>
+                                    <TableCell colSpan={5} className="text-center h-24">
+                                        <Loader2 className="mx-auto h-8 w-8 animate-spin" />
+                                    </TableCell>
+                                </TableRow>
+                            ) : spoilage.length > 0 ? (
                                 [...spoilage].reverse().map(event => (
                                     <TableRow key={event.id}>
                                         <TableCell>{new Date(event.date).toLocaleDateString()}</TableCell>

@@ -1,4 +1,3 @@
-
 'use client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -6,8 +5,6 @@ import RetailLabLogo from './retaillab-logo';
 import { useEffect, useState } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
-import { cn } from '@/lib/utils';
-import Link from 'next/link';
 import type { ReceiptItem } from '@/lib/types';
 
 interface ReceiptModalProps {
@@ -111,8 +108,8 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
           </div>
         </DialogHeader>
         <div className="border-t border-b border-dashed py-2 my-2 space-y-1">
-          {items.map((item) => (
-            <div key={item.name} className="flex justify-between">
+          {items.map((item, index) => (
+            <div key={index} className="flex justify-between">
               <span>{item.quantity}x {item.name}</span>
               <span>₦{(item.quantity * item.price).toFixed(2)}</span>
             </div>

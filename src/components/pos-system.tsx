@@ -1,22 +1,23 @@
-
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
-  Minus, Plus, Trash2, PackageOpen, Calculator
+  Minus, Plus, Trash2, PackageOpen, Calculator, Loader2
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Product, Sale, ReceiptItem } from '@/lib/types';
-import { useLocalStorage } from '@/hooks/use-local-storage';
+import { Product, Sale } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReceiptModal from './receipt-modal';
 import { Separator } from './ui/separator';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
+import { useToast } from '@/hooks/use-toast';
+
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 const iconMap: { [key: string]: React.ElementType } = {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
@@ -26,22 +27,44 @@ type CartItem = Product & { quantity: number };
 
 export default function PosSystem() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeTab, setActiveTab] = useState('pos');
+  const [activeTab, setActiveTab] = useState('calc');
   const [calculatorInput, setCalculatorInput] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
-  const [receiptData, setReceiptData] = useState<{items: ReceiptItem[], subtotal: number, saleId: string} | null>(null);
+  const [receiptData, setReceiptData] = useState<{items: any[], subtotal: number, saleId: string} | null>(null);
+  const { toast } = useToast();
 
-  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
-  const [sales, setSales] = useLocalStorage<Sale[]>('sales', []);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [loadingProducts, setLoadingProducts] = useState(true);
+  const [isPaying, setIsPaying] = useState(false);
   const [isClient, setIsClient] = useState(false);
+
+  const fetchProducts = async () => {
+    setLoadingProducts(true);
+    try {
+      const token = sessionStorage.getItem('user-token');
+      const response = await fetch(`${API_BASE_URL}/api/products.php?action=read`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+      
+      const availableProducts = data.products || [];
+      setProducts(availableProducts);
+      if (availableProducts.length > 0) {
+        const initialCategory = availableProducts.find((p: Product) => p.category)?.category || 'pos';
+        setActiveTab(initialCategory);
+      }
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error fetching products', description: error.message });
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
 
   useEffect(() => {
     setIsClient(true);
-    if(products.length > 0) {
-      const initialCategory = products.find(p => p.category)?.category || 'pos';
-      setActiveTab(initialCategory);
-    }
-  }, [products]);
+    fetchProducts();
+  }, []);
   
   const getProductStock = (productId: number) => {
     const product = products.find(p => p.id === productId);
@@ -90,7 +113,6 @@ export default function PosSystem() {
       setCalculatorInput('');
     } else if (value === '=') {
       try {
-        // Using a safer evaluation method is recommended for production apps
         const result = eval(calculatorInput.replace(/[^-()\d/*+.]/g, ''));
         setCalculatorInput(result.toString());
       } catch (error) {
@@ -101,47 +123,45 @@ export default function PosSystem() {
     }
   }
 
-  const handlePay = () => {
+  const handlePay = async () => {
     if (cart.length === 0) return;
+    setIsPaying(true);
 
-    // Update stock levels
-    const updatedProducts = products.map(p => {
-      const cartItem = cart.find(item => item.id === p.id);
-      if (cartItem) {
-        return { ...p, stock: p.stock - cartItem.quantity };
-      }
-      return p;
-    });
-    setProducts(updatedProducts);
+    const saleItems = cart.map(item => ({
+      product_id: item.id,
+      quantity: item.quantity,
+      price: item.price
+    }));
 
-    const saleId = `sale_${new Date().getTime()}`;
+    try {
+      const token = sessionStorage.getItem('user-token');
+      const response = await fetch(`${API_BASE_URL}/api/sales.php`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({
+          action: 'create',
+          total,
+          items: saleItems
+        })
+      });
 
-    const newSale: Sale = {
-      items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
-      subtotal,
-      total,
-      date: new Date().toISOString(),
-    };
-    
-    setSales([...sales, newSale]);
-    
-    const businessDetails = {
-        name: localStorage.getItem('businessName') || 'RetailLab',
-        address: localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA',
-        rcNumber: localStorage.getItem('rcNumber') || '',
-        phoneNumber: localStorage.getItem('phoneNumber') || '',
-    };
-    
-    const receiptForStorage = {
-        ...newSale,
-        businessDetails
-    };
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || 'Failed to process payment');
 
-    sessionStorage.setItem(saleId, JSON.stringify(receiptForStorage));
-    
-    setReceiptData({items: newSale.items, subtotal: newSale.subtotal, saleId});
-    setShowReceipt(true);
-    setCart([]);
+      const saleId = `sale_${data.sale_id}`; // Use the ID from the backend
+      
+      const receiptItemsForDisplay = cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price }));
+      
+      setReceiptData({ items: receiptItemsForDisplay, subtotal, saleId });
+      setShowReceipt(true);
+      setCart([]);
+      fetchProducts(); // Refresh product stock levels after sale
+
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Payment Error', description: error.message });
+    } finally {
+      setIsPaying(false);
+    }
   };
   
   if (!isClient) {
@@ -149,6 +169,9 @@ export default function PosSystem() {
   }
 
   const ProductGrid = () => {
+    if (loadingProducts) {
+      return <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+    }
     if (products.length === 0) {
       return (
          <Alert>
@@ -269,8 +292,8 @@ export default function PosSystem() {
                 <p>₦{total.toFixed(2)}</p>
               </div>
             </div>
-            <Button className="w-full mt-4 bg-accent text-accent-foreground" onClick={handlePay} disabled={cart.length === 0}>
-              Pay Now
+            <Button className="w-full mt-4 bg-accent text-accent-foreground" onClick={handlePay} disabled={cart.length === 0 || isPaying}>
+              {isPaying ? <Loader2 className="animate-spin" /> : 'Pay Now'}
             </Button>
           </CardContent>
         </Card>

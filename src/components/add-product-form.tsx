@@ -1,4 +1,3 @@
-
 'use client';
 
 import { useState } from 'react';
@@ -6,15 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Product } from '@/lib/types';
 import { Loader2, Wand2 } from 'lucide-react';
 import { suggestProductDetails } from '@/ai/flows/suggest-product-details';
 import { useToast } from '@/hooks/use-toast';
 import Barcode from 'react-barcode';
 
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+
 export default function AddProductForm() {
-  const [products, setProducts] = useLocalStorage<Product[]>('products', []);
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
   const [stock, setStock] = useState('');
@@ -69,7 +67,7 @@ export default function AddProductForm() {
     }
   };
 
-  const handleAddProduct = () => {
+  const handleAddProduct = async () => {
     if (!name || !price || !stock || !category || !barcode) {
       toast({
         variant: 'destructive',
@@ -80,25 +78,47 @@ export default function AddProductForm() {
     }
     setIsLoading(true);
 
-    const newProduct: Product = {
-      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
-      name,
-      price: parseFloat(price),
-      stock: parseInt(stock, 10),
-      category,
-      icon: 'PackageOpen', // Default icon
-      barcode,
-      description,
-    };
+    try {
+      const token = sessionStorage.getItem('user-token');
+      const response = await fetch(`${API_BASE_URL}/api/products.php`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          action: 'create',
+          name,
+          price: parseFloat(price),
+          stock: parseInt(stock, 10),
+          category,
+          barcode,
+          description,
+          icon: 'PackageOpen', // Default icon
+        }),
+      });
 
-    setProducts([...products, newProduct]);
-    
-    toast({
-      title: 'Product Added!',
-      description: `${name} has been successfully added to your inventory.`,
-    });
+      const data = await response.json();
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to add product');
+      }
 
-    router.push('/dashboard/inventory');
+      toast({
+        title: 'Product Added!',
+        description: `${name} has been successfully added to your inventory.`,
+      });
+
+      router.push('/dashboard/inventory');
+
+    } catch (error: any) {
+        toast({
+            variant: 'destructive',
+            title: 'Error Adding Product',
+            description: error.message,
+        });
+    } finally {
+        setIsLoading(false);
+    }
   };
 
   return (
