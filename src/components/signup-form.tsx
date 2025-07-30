@@ -47,6 +47,11 @@ export default function SignupForm() {
         throw new Error(data.message || 'Signup failed.');
       }
       
+      // Store the new user ID to pass to the welcome page
+      if (data.userId) {
+        sessionStorage.setItem('new-user-id', data.userId);
+      }
+
       toast({
         title: 'Account Created',
         description: "Let's set up your business details.",

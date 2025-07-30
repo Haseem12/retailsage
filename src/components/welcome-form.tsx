@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -27,9 +27,24 @@ export default function WelcomeForm() {
   const [businessName, setBusinessName] = useState('');
   const [businessAddress, setBusinessAddress] = useState('');
   const [shopType, setShopType] = useState('');
+  const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { toast } = useToast();
+
+  useEffect(() => {
+    const storedUserId = sessionStorage.getItem('new-user-id');
+    if (!storedUserId) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'No user ID found. Please sign up again.',
+      });
+      router.push('/signup');
+    } else {
+      setUserId(storedUserId);
+    }
+  }, [router, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -44,13 +59,12 @@ export default function WelcomeForm() {
 
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/business-details`, {
+      const response = await fetch(`${API_BASE_URL}/business-details.php`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          // In a real app, you'd include an auth token here
         },
-        body: JSON.stringify({ businessName, businessAddress, shopType }),
+        body: JSON.stringify({ userId, businessName, businessAddress, shopType }),
       });
 
       const data = await response.json();
@@ -59,9 +73,11 @@ export default function WelcomeForm() {
         throw new Error(data.message || 'Failed to save details.');
       }
       
+      sessionStorage.removeItem('new-user-id'); // Clean up stored ID
+
       toast({
         title: 'Setup Complete!',
-        description: 'Your business details have been saved.',
+        description: 'Your business details have been saved. Please log in.',
       });
       router.push('/login');
     } catch (error: any) {
@@ -112,7 +128,7 @@ export default function WelcomeForm() {
           </div>
           <div className="space-y-2">
             <Label>Shop Type</Label>
-            <Select onValueChange={setShopType} value={shopType} required>
+            <Select onValueChange={setShopType} value={shopType}>
                 <SelectTrigger className="bg-background/70">
                     <SelectValue placeholder="Select a shop type" />
                 </SelectTrigger>
@@ -125,8 +141,8 @@ export default function WelcomeForm() {
           </div>
         </CardContent>
         <CardFooter>
-          <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading}>
-            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Continue to Dashboard'}
+          <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading || !userId}>
+            {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : 'Complete Setup'}
           </Button>
         </CardFooter>
       </form>
