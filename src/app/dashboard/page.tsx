@@ -1,12 +1,12 @@
 
 'use client';
-import PosSystem from '@/components/pos-system';
 import SalesChart from '@/components/sales-chart';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { TrendingUp, ShoppingCart, Users, Percent } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
+import ActionButtons from '@/components/action-buttons';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -34,6 +34,7 @@ export default function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-8">
+      <ActionButtons />
       <Card>
         <CardHeader>
           <CardTitle>Today's Snapshot</CardTitle>
@@ -63,10 +64,7 @@ export default function DashboardPage() {
         </CardContent>
       </Card>
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-        <div className="lg:col-span-2">
-          <PosSystem />
-        </div>
-        <div className="lg:col-span-1">
+        <div className="lg:col-span-3">
           <SalesChart />
         </div>
       </div>

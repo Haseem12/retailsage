@@ -26,6 +26,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { PRODUCTS, type Product } from '@/lib/constants';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReceiptModal, { type ReceiptItem } from './receipt-modal';
+import { Separator } from './ui/separator';
 
 const iconMap: { [key: string]: React.ElementType } = {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
@@ -64,6 +65,8 @@ export default function PosSystem() {
   };
 
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
+  const tax = subtotal * 0.08;
+  const total = subtotal + tax;
   
   const categories = [...new Set(PRODUCTS.map(p => p.category))];
 
@@ -97,7 +100,7 @@ export default function PosSystem() {
       </TabsList>
       {categories.map(cat => (
          <TabsContent key={cat} value={cat}>
-           <ScrollArea className="h-[50vh]">
+           <ScrollArea className="h-[65vh]">
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
               {PRODUCTS.filter(p => p.category === cat).map((product) => {
                 const Icon = iconMap[product.icon] || Calculator;
@@ -136,20 +139,72 @@ export default function PosSystem() {
   );
 
   return (
-    <>
-      <Card>
-        <CardHeader>
-           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="pos">Point of Sale</TabsTrigger>
-              <TabsTrigger value="calc">Calculator</TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </CardHeader>
-        <CardContent>
-          {activeTab === 'pos' ? <ProductGrid /> : <CalculatorTab />}
-        </CardContent>
-      </Card>
+    <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
+      <div className="lg:col-span-2">
+        <Card>
+          <CardHeader>
+            <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="grid w-full grid-cols-2">
+                <TabsTrigger value="pos">Point of Sale</TabsTrigger>
+                <TabsTrigger value="calc">Calculator</TabsTrigger>
+              </TabsList>
+            </Tabs>
+          </CardHeader>
+          <CardContent>
+            {activeTab === 'pos' ? <ProductGrid /> : <CalculatorTab />}
+          </CardContent>
+        </Card>
+      </div>
+      <div className="lg:col-span-1">
+        <Card>
+          <CardHeader>
+            <CardTitle>Current Order</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <ScrollArea className="h-80">
+              <div className="space-y-4">
+                {cart.length === 0 ? (
+                  <p className="text-muted-foreground text-center">Your cart is empty.</p>
+                ) : (
+                  cart.map(item => (
+                    <div key={item.id} className="flex items-center">
+                      <div className="flex-grow">
+                        <p className="font-medium">{item.name}</p>
+                        <p className="text-sm text-muted-foreground">₦{item.price.toFixed(2)}</p>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity - 1)}><Minus className="h-4 w-4" /></Button>
+                        <span>{item.quantity}</span>
+                        <Button variant="outline" size="icon" className="h-6 w-6" onClick={() => updateQuantity(item.id, item.quantity + 1)}><Plus className="h-4 w-4" /></Button>
+                      </div>
+                      <p className="w-20 text-right font-medium">₦{(item.price * item.quantity).toFixed(2)}</p>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive" onClick={() => updateQuantity(item.id, 0)}><Trash2 className="h-4 w-4" /></Button>
+                    </div>
+                  ))
+                )}
+              </div>
+            </ScrollArea>
+            <Separator className="my-4" />
+            <div className="space-y-2">
+              <div className="flex justify-between text-sm">
+                <p>Subtotal</p>
+                <p>₦{subtotal.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between text-sm">
+                <p>Tax (8%)</p>
+                <p>₦{tax.toFixed(2)}</p>
+              </div>
+              <div className="flex justify-between font-bold text-lg">
+                <p>Total</p>
+                <p>₦{total.toFixed(2)}</p>
+              </div>
+            </div>
+            <Button className="w-full mt-4 bg-accent text-accent-foreground" onClick={handlePay} disabled={cart.length === 0}>
+              Pay Now
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       <ReceiptModal 
         isOpen={showReceipt} 
@@ -157,6 +212,6 @@ export default function PosSystem() {
         items={receiptItems}
         subtotal={receiptItems.reduce((acc, item) => acc + item.price * item.quantity, 0)}
       />
-    </>
+    </div>
   );
 }
