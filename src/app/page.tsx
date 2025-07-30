@@ -7,11 +7,13 @@ import {
   CarouselItem,
   CarouselNext,
   CarouselPrevious,
+  type CarouselApi,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import Image from 'next/image';
 import RetailLabLogo from '@/components/retaillab-logo';
+import { useEffect, useState } from 'react';
 
 const onboardingSteps = [
   {
@@ -41,48 +43,77 @@ const onboardingSteps = [
 ];
 
 export default function OnboardingPage() {
+  const [api, setApi] = useState<CarouselApi>();
+  const [current, setCurrent] = useState(0);
+
+  useEffect(() => {
+    if (!api) {
+      return;
+    }
+
+    setCurrent(api.selectedScrollSnap());
+
+    const onSelect = () => {
+      setCurrent(api.selectedScrollSnap());
+    };
+
+    api.on('select', onSelect);
+
+    return () => {
+      api.off('select', onSelect);
+    };
+  }, [api]);
+
   return (
-    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <div className="relative flex min-h-screen flex-col items-center justify-center bg-background">
       <div
         className="absolute inset-0 bg-cover bg-center"
         style={{ backgroundImage: "url('/bg.jpg')", filter: 'blur(2px) brightness(0.4)' }}
       ></div>
-      <div className="z-10 flex flex-col items-center text-center w-full max-w-md">
-        <div className="flex items-center gap-2 mb-6">
+      <div className="z-10 flex flex-col items-center text-center w-full h-screen p-4">
+        <div className="flex items-center gap-2 my-6">
             <RetailLabLogo className="w-10 h-10" />
             <h1 className="text-4xl font-bold font-headline text-white">RetailLab</h1>
         </div>
-        <Carousel className="w-full">
-          <CarouselContent>
+        
+        <Carousel setApi={setApi} className="w-full flex-1">
+          <CarouselContent className="h-full">
             {onboardingSteps.map((step, index) => (
-              <CarouselItem key={index}>
-                <Card className="bg-card/80 backdrop-blur-sm border-border/50">
-                  <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
-                    <Image
-                      src={step.image}
-                      alt={step.title}
-                      width={600}
-                      height={400}
-                      data-ai-hint={step.aiHint}
-                      className="rounded-lg mb-4"
-                    />
-                    <h2 className="text-2xl font-bold">{step.title}</h2>
-                    <p className="text-muted-foreground">{step.description}</p>
-                  </CardContent>
-                </Card>
+              <CarouselItem key={index} className="h-full">
+                <div className="flex flex-col items-center justify-center h-full">
+                    <Card className="bg-card/80 backdrop-blur-sm border-border/50 w-full max-w-md">
+                    <CardContent className="flex flex-col items-center justify-center p-6 gap-4">
+                        <Image
+                        src={step.image}
+                        alt={step.title}
+                        width={600}
+                        height={400}
+                        data-ai-hint={step.aiHint}
+                        className="rounded-lg mb-4"
+                        />
+                        <h2 className="text-2xl font-bold">{step.title}</h2>
+                        <p className="text-muted-foreground">{step.description}</p>
+                    </CardContent>
+                    </Card>
+                </div>
               </CarouselItem>
             ))}
           </CarouselContent>
           <CarouselPrevious />
           <CarouselNext />
         </Carousel>
-        <div className="mt-8 w-full flex flex-col gap-4">
-            <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
-                <Link href="/signup">Create an Account</Link>
-            </Button>
-            <Button asChild size="lg" variant="outline">
-                <Link href="/login">Login</Link>
-            </Button>
+        
+        <div className="w-full max-w-md flex flex-col gap-4 py-8">
+            {current === onboardingSteps.length - 1 && (
+                <>
+                <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
+                    <Link href="/signup">Create an Account</Link>
+                </Button>
+                <Button asChild size="lg" variant="outline">
+                    <Link href="/login">Login</Link>
+                </Button>
+                </>
+            )}
         </div>
       </div>
     </div>
