@@ -12,10 +12,14 @@ import {
   SidebarInset,
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { Gem, LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { useAuthState } from 'react-firebase-hooks/auth';
+import { auth } from '@/lib/firebase';
+import { signOut } from 'firebase/auth';
+import { useEffect } from 'react';
 
 const navItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
@@ -30,6 +34,28 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [user, loading] = useAuthState(auth);
+
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/');
+    }
+  }, [user, loading, router]);
+
+  const handleLogout = async () => {
+    await signOut(auth);
+    router.push('/');
+  };
+  
+  if (loading || !user) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
+
 
   return (
     <SidebarProvider>
@@ -60,20 +86,18 @@ export default function DashboardLayout({
         <SidebarFooter>
           <div className="flex items-center gap-3 p-2 rounded-md transition-colors">
              <Avatar>
-                <AvatarImage src="https://placehold.co/40x40.png" data-ai-hint="manager avatar" alt="User" />
-                <AvatarFallback>JD</AvatarFallback>
+                <AvatarImage src={user.photoURL || "https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
+                <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
               </Avatar>
               <div className="flex flex-col text-sm group-data-[collapsible=icon]:hidden">
-                  <span className="font-semibold">Jane Doe</span>
+                  <span className="font-semibold">{user.displayName || user.email}</span>
                   <span className="text-muted-foreground">Manager</span>
               </div>
           </div>
-          <Link href="/" passHref>
-            <SidebarMenuButton tooltip="Logout">
-              <LogOut />
-              <span>Logout</span>
-            </SidebarMenuButton>
-          </Link>
+          <SidebarMenuButton tooltip="Logout" onClick={handleLogout}>
+            <LogOut />
+            <span>Logout</span>
+          </SidebarMenuButton>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
@@ -91,3 +115,4 @@ export default function DashboardLayout({
     </SidebarProvider>
   );
 }
+import { Loader2 } from 'lucide-react';

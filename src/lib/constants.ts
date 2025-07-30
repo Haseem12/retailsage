@@ -1,5 +1,3 @@
-export const CORRECT_PIN = "1234";
-
 export const PRODUCTS = [
   { id: 1, name: "Fresh Apples", price: 2.5, icon: "Apple", category: "Groceries" },
   { id: 2, name: "Whole Milk", price: 3.0, icon: "Milk", category: "Groceries" },
@@ -19,7 +17,7 @@ export type Product = (typeof PRODUCTS)[0];
 
 export const FUEL_NOZZLES = [
   { id: 1, name: "Nozzle 1", status: "Available", fuelType: "Regular", sales: 1250.75 },
-  { id: 2, name: "Nozzle 2", status: "In Use", fuelType: "Regular", sales: 850.20 },
+  { id: 2, name: "In Use", fuelType: "Regular", sales: 850.20 },
   { id: 3, name: "Nozzle 3", status: "Available", fuelType: "Premium", sales: 2100.45 },
   { id: 4, name: "Nozzle 4", status: "Out of Service", fuelType: "Premium", sales: 1980.90 },
   { id: 5, name: "Nozzle 5", status: "Available", fuelType: "Diesel", sales: 3400.00 },
