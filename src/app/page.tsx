@@ -5,8 +5,6 @@ import {
   Carousel,
   CarouselContent,
   CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
   type CarouselApi,
 } from '@/components/ui/carousel';
 import { Button } from '@/components/ui/button';
@@ -84,37 +82,34 @@ export default function OnboardingPage() {
                       <h2 className="text-2xl font-bold">{step.title}</h2>
                       <p className="text-white/80 max-w-sm">{step.description}</p>
                   </div>
-
-                  <div className="flex items-center gap-2 my-4">
-                    {onboardingSteps.map((_, i) => (
-                      <div
-                        key={i}
-                        className={cn(
-                          'h-2 w-2 rounded-full bg-white/50 transition-all',
-                          i === current && 'w-4 bg-white'
-                        )}
-                      />
-                    ))}
-                  </div>
                   
-                  <div className="w-full max-w-md flex flex-col gap-4 py-8 h-28">
-                      {current === onboardingSteps.length - 1 && (
-                          <>
-                          <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90 animate-in fade-in duration-500">
+                  <div className="flex flex-col items-center justify-end w-full max-w-md gap-4 py-4 h-28">
+                    <div className="flex items-center gap-2 mb-4">
+                        {onboardingSteps.map((_, i) => (
+                          <div
+                            key={i}
+                            className={cn(
+                              'h-2 w-2 rounded-full bg-white/50 transition-all',
+                              i === current && 'w-4 bg-white'
+                            )}
+                          />
+                        ))}
+                    </div>
+                    {current === onboardingSteps.length - 1 && (
+                        <div className="flex flex-col w-full gap-2 animate-in fade-in duration-500">
+                          <Button asChild size="lg" className="bg-accent text-accent-foreground hover:bg-accent/90">
                               <Link href="/signup">Create an Account</Link>
                           </Button>
-                          <Button asChild size="lg" variant="outline" className="animate-in fade-in duration-500">
+                          <Button asChild size="lg" variant="outline">
                               <Link href="/login">Login</Link>
                           </Button>
-                          </>
-                      )}
+                        </div>
+                    )}
                   </div>
               </div>
             </CarouselItem>
           )})}
         </CarouselContent>
-        <CarouselPrevious className="absolute left-4 top-1/2 -translate-y-1/2 z-20 text-white" />
-        <CarouselNext className="absolute right-4 top-1/2 -translate-y-1/2 z-20 text-white" />
       </Carousel>
     </div>
   );
