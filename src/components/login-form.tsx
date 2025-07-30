@@ -6,10 +6,10 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import RetailLabLogo from './retaillab-logo';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
@@ -17,12 +17,13 @@ export default function LoginForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error'; text: string } | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setMessage(null);
     try {
       const response = await fetch(`${API_BASE_URL}/api/auth/login.php`, {
         method: 'POST',
@@ -40,18 +41,11 @@ export default function LoginForm() {
       
       sessionStorage.setItem('user-token', data.token);
       
-      // The user's shopType is now returned from the backend on login.
       if (data.shopType) {
         localStorage.setItem('shopType', data.shopType);
       } else {
-        // If shopType is not returned (e.g., user hasn't finished setup), remove it.
         localStorage.removeItem('shopType');
       }
-
-      toast({
-        title: 'Login Successful',
-        description: 'Welcome back to RetailLab!',
-      });
 
       if (data.shopType === 'Fuel Station') {
         router.push('/dashboard/fuel-management');
@@ -60,11 +54,7 @@ export default function LoginForm() {
       }
 
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Login Failed',
-        description: error.message || 'An unknown error occurred.',
-      });
+      setMessage({ type: 'error', text: error.message || 'An unknown error occurred.' });
     } finally {
       setIsLoading(false);
     }
@@ -81,6 +71,15 @@ export default function LoginForm() {
       </CardHeader>
       <form onSubmit={handleLogin}>
         <CardContent className="flex flex-col gap-4">
+           {message && (
+            <Alert variant="destructive">
+              <AlertCircle className="h-4 w-4" />
+              <AlertTitle>Login Failed</AlertTitle>
+              <AlertDescription>
+                {message.text}
+              </AlertDescription>
+            </Alert>
+          )}
           <Input
             type="email"
             placeholder="Email"

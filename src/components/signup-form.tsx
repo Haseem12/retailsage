@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { useToast } from '@/hooks/use-toast';
-import { Loader2 } from 'lucide-react';
+import { Loader2, AlertCircle, CheckCircle } from 'lucide-react';
 import Link from 'next/link';
 import RetailLabLogo from './retaillab-logo';
+import { Alert, AlertDescription, AlertTitle } from './ui/alert';
+import { cn } from '@/lib/utils';
 
 const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
@@ -18,16 +19,16 @@ export default function SignupForm() {
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
   const router = useRouter();
-  const { toast } = useToast();
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
+    setMessage(null);
     if (password !== confirmPassword) {
-      toast({
-        variant: 'destructive',
-        title: 'Signup Failed',
-        description: 'Passwords do not match.',
+      setMessage({
+        type: 'error',
+        text: 'Passwords do not match.',
       });
       return;
     }
@@ -47,22 +48,15 @@ export default function SignupForm() {
         throw new Error(data.message || 'Signup failed.');
       }
       
-      // Store the new user ID to pass to the welcome page
       if (data.userId) {
         sessionStorage.setItem('new-user-id', data.userId);
       }
 
-      toast({
-        title: 'Account Created',
-        description: "Let's set up your business details.",
-      });
-      router.push('/welcome');
+      setMessage({ type: 'success', text: "Account created! Let's set up your business details." });
+      setTimeout(() => router.push('/welcome'), 2000);
+
     } catch (error: any) {
-      toast({
-        variant: 'destructive',
-        title: 'Signup Failed',
-        description: error.message || 'An unknown error occurred.',
-      });
+       setMessage({ type: 'error', text: error.message || 'An unknown error occurred.' });
     } finally {
       setIsLoading(false);
     }
@@ -80,6 +74,15 @@ export default function SignupForm() {
       </CardHeader>
       <form onSubmit={handleSignup}>
         <CardContent className="flex flex-col gap-4">
+           {message && (
+            <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className={cn(message.type === 'success' && 'border-green-500/50 text-green-500 dark:border-green-500 [&>svg]:text-green-500')}>
+              {message.type === 'error' ? <AlertCircle className="h-4 w-4" /> : <CheckCircle className="h-4 w-4" />}
+              <AlertTitle>{message.type === 'error' ? 'Signup Failed' : 'Success'}</AlertTitle>
+              <AlertDescription>
+                {message.text}
+              </AlertDescription>
+            </Alert>
+          )}
           <Input
             type="email"
             placeholder="Email"
