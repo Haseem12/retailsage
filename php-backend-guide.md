@@ -163,7 +163,6 @@ function get_user_id_from_token($link) {
     }
     return null;
 }
-?>
 ```
 
 ## 4. Auth and Business Setup Scripts
@@ -199,7 +198,6 @@ if ($stmt = mysqli_prepare($link, $sql)) {
     mysqli_stmt_close($stmt);
 }
 mysqli_close($link);
-?>
 ```
 
 ### `/api/auth/login.php`
@@ -255,7 +253,6 @@ if (!empty($data->email) && !empty($data->password)) {
     echo json_encode(["message" => "Login failed. Data is incomplete."]);
 }
 mysqli_close($link);
-?>
 ```
 
 ### `/api/business-details.php`
@@ -293,7 +290,6 @@ if ($stmt = mysqli_prepare($link, $sql)) {
     mysqli_stmt_close($stmt);
 }
 mysqli_close($link);
-?>
 ```
 
 ## 5. Main API Scripts
@@ -352,7 +348,6 @@ if ($method == 'POST') {
     }
 }
 mysqli_close($link);
-?>
 ```
 
 ### `/api/sales.php`
@@ -465,7 +460,6 @@ if ($method == 'POST') {
     }
 }
 mysqli_close($link);
-?>
 ```
 
 ### `/api/spoilage.php`
@@ -533,7 +527,6 @@ if ($method == 'POST') {
     }
 }
 mysqli_close($link);
-?>
 ```
 
 ### `/api/data.php`
@@ -612,5 +605,4 @@ if ($method == 'GET' && $_GET['action'] == 'backup') {
     }
 }
 mysqli_close($link);
-?>
 ```
