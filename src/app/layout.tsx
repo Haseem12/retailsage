@@ -4,7 +4,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 import { useIsMobile } from '@/hooks/use-mobile';
 import DesktopLockScreen from '@/components/desktop-lock-screen';
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 
 // This metadata is still useful for SEO and mobile browser tabs.
 export const metadata: Metadata = {
@@ -23,7 +23,7 @@ function AppContent({ children }: { children: React.ReactNode }) {
   }, []);
 
   if (!isClient) {
-    // Render nothing or a loading state on the server
+    // Render nothing or a loading state on the server to avoid hydration mismatch
     return null; 
   }
 
