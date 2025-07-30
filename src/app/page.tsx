@@ -79,7 +79,7 @@ export default function OnboardingPage() {
                     </div>
                   </header>
 
-                  <main className="flex flex-col items-center flex-1 text-white p-6 gap-4 pt-16">
+                  <main className="flex flex-col items-center justify-end flex-1 text-white p-6 gap-4">
                       <Icon className="w-24 h-24 text-primary mb-4" />
                       <h2 className="text-2xl font-bold">{step.title}</h2>
                       <p className="text-white/80 max-w-sm">{step.description}</p>
