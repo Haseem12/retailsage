@@ -17,7 +17,7 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Shield, Flame, Settings, LogOut, ShoppingCart, BookOpen, BarChart2, DollarSign, Users, Trash2 } from 'lucide-react';
+import { LayoutDashboard, Shield, Flame, LogOut, ShoppingCart, BookOpen, BarChart2, DollarSign, Users, Trash2, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
@@ -170,10 +170,6 @@ export default function DashboardLayout({
         
         <header className="hidden md:flex items-center justify-end p-2 border-b h-14">
             <div className="flex items-center gap-4">
-                <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/settings')}>
-                    <Settings className="size-5" />
-                    <span className="sr-only">Settings</span>
-                </Button>
                 <DropdownMenu>
                     <DropdownMenuTrigger asChild>
                          <Button variant="ghost" className="relative h-8 w-8 rounded-full">
@@ -193,6 +189,10 @@ export default function DashboardLayout({
                             </div>
                         </DropdownMenuLabel>
                         <DropdownMenuSeparator />
+                        <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+                            <User className="mr-2 h-4 w-4" />
+                            <span>Profile</span>
+                        </DropdownMenuItem>
                         <DropdownMenuItem onClick={handleLogout}>
                             <LogOut className="mr-2 h-4 w-4" />
                             <span>Log out</span>
