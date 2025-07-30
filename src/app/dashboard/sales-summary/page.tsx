@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,7 +34,16 @@ export default function SalesSummaryPage() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to fetch sales summary');
-        const sales: Sale[] = data.sales || [];
+        
+        const sales: Sale[] = (data.sales || []).map((sale: any) => ({
+          ...sale,
+          total: parseFloat(sale.total),
+          items: sale.items.map((item: any) => ({
+            ...item,
+            price: parseFloat(item.price),
+            quantity: parseInt(item.quantity, 10),
+          })),
+        }));
         
         const totalRev = sales.reduce((acc, sale) => acc + sale.total, 0);
         setTotalRevenue(totalRev);
