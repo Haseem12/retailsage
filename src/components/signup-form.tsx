@@ -49,9 +49,9 @@ export default function SignupForm() {
       
       toast({
         title: 'Account Created',
-        description: 'Welcome to RetailLab! Please log in.',
+        description: "Let's set up your business details.",
       });
-      router.push('/login');
+      router.push('/welcome');
     } catch (error: any) {
       toast({
         variant: 'destructive',
