@@ -1,3 +1,4 @@
+
 'use client';
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -23,7 +24,18 @@ export default function SalesHistoryPage() {
         });
         const data = await response.json();
         if (!response.ok) throw new Error(data.message || 'Failed to fetch sales');
-        setSales(data.sales.sort((a: Sale, b: Sale) => new Date(b.date).getTime() - new Date(a.date).getTime()));
+        
+        const typedSales = (data.sales || []).map((sale: any) => ({
+          ...sale,
+          total: parseFloat(sale.total),
+          items: sale.items.map((item: any) => ({
+            ...item,
+            price: parseFloat(item.price),
+            quantity: parseInt(item.quantity, 10),
+          })),
+        }));
+
+        setSales(typedSales.sort((a: Sale, b: Sale) => new Date(b.date).getTime() - new Date(a.date).getTime()));
       } catch (error: any) {
         toast({ variant: 'destructive', title: 'Error fetching sales history', description: error.message });
       } finally {
