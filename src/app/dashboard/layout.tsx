@@ -1,3 +1,4 @@
+
 'use client';
 import {
   SidebarProvider,
@@ -16,10 +17,7 @@ import { usePathname, useRouter } from 'next/navigation';
 import { LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { useAuthState } from 'react-firebase-hooks/auth';
-import { auth } from '@/lib/firebase';
-import { signOut } from 'firebase/auth';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import RetailLabLogo from '@/components/retaillab-logo';
 import { Loader2 } from 'lucide-react';
 
@@ -37,20 +35,26 @@ export default function DashboardLayout({
 }) {
   const pathname = usePathname();
   const router = useRouter();
-  const [user, loading] = useAuthState(auth);
+  const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
-    if (!loading && !user) {
+    // This is a simulation. In a real app, you'd verify the token with the backend.
+    const token = sessionStorage.getItem('user-token');
+    if (!token) {
       router.push('/login');
+    } else {
+      setIsAuthenticated(true);
     }
-  }, [user, loading, router]);
+    setLoading(false);
+  }, [router]);
 
-  const handleLogout = async () => {
-    await signOut(auth);
+  const handleLogout = () => {
+    sessionStorage.removeItem('user-token');
     router.push('/login');
   };
   
-  if (loading || !user) {
+  if (loading || !isAuthenticated) {
     return (
       <div className="flex items-center justify-center h-screen">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -88,11 +92,11 @@ export default function DashboardLayout({
         <SidebarFooter>
           <div className="flex items-center gap-3 p-2 rounded-md transition-colors">
              <Avatar>
-                <AvatarImage src={user.photoURL || "https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
-                <AvatarFallback>{user.email?.charAt(0).toUpperCase()}</AvatarFallback>
+                <AvatarImage src={"https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
+                <AvatarFallback>U</AvatarFallback>
               </Avatar>
               <div className="flex flex-col text-sm group-data-[collapsible=icon]:hidden">
-                  <span className="font-semibold">{user.displayName || user.email}</span>
+                  <span className="font-semibold">User</span>
                   <span className="text-muted-foreground">Manager</span>
               </div>
           </div>

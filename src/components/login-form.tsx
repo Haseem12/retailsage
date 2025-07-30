@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -8,9 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter }
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 import Link from 'next/link';
-import { signInWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
 import RetailLabLogo from './retaillab-logo';
+
+const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');
@@ -23,7 +24,24 @@ export default function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signInWithEmailAndPassword(auth, email, password);
+      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Login failed.');
+      }
+      
+      // Assuming the backend returns a token on successful login
+      // For simulation, we'll store a mock token.
+      sessionStorage.setItem('user-token', data.token || 'mock-token');
+
       toast({
         title: 'Login Successful',
         description: 'Welcome back to RetailLab!',
