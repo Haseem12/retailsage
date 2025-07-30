@@ -85,7 +85,7 @@ export default function OnboardingPage() {
                       <p className="text-white/80 max-w-sm">{step.description}</p>
                   </main>
                   
-                  <footer className="flex-shrink-0 h-28">
+                  <footer className="flex-shrink-0 h-40">
                     <div className="flex flex-col items-center justify-center w-full max-w-md mx-auto gap-4 py-4 h-full">
                       <div className="flex items-center gap-2 mb-4">
                           {onboardingSteps.map((_, i) => (
@@ -106,6 +106,11 @@ export default function OnboardingPage() {
                             <Button asChild size="lg" variant="outline">
                                 <Link href="/login">Login</Link>
                             </Button>
+                            <div className="flex justify-center gap-4 mt-2 text-sm text-white/80">
+                                <Link href="/about" className="hover:underline">About</Link>
+                                <span>·</span>
+                                <Link href="/support" className="hover:underline">Support</Link>
+                            </div>
                           </div>
                       )}
                     </div>
