@@ -171,7 +171,7 @@ function get_user_id_from_token($link) {
 ```php
 <?php
 // /api/auth/signup.php
-include_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -204,7 +204,7 @@ mysqli_close($link);
 ```php
 <?php
 // /api/auth/login.php
-include_once 'config.php';
+require_once __DIR__ . '/config.php';
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -259,7 +259,7 @@ mysqli_close($link);
 ```php
 <?php
 // /api/business-details.php
-include_once 'auth/config.php';
+require_once __DIR__ . '/auth/config.php';
 
 $data = json_decode(file_get_contents("php://input"));
 
@@ -298,7 +298,7 @@ mysqli_close($link);
 ```php
 <?php
 // /api/products.php
-include_once 'auth/config.php';
+require_once __DIR__ . '/auth/config.php';
 $user_id = get_user_id_from_token($link);
 if (!$user_id) {
     http_response_code(401);
@@ -354,7 +354,7 @@ mysqli_close($link);
 ```php
 <?php
 // /api/sales.php
-include_once 'auth/config.php';
+require_once __DIR__ . '/auth/config.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 
@@ -466,7 +466,7 @@ mysqli_close($link);
 ```php
 <?php
 // /api/spoilage.php
-include_once 'auth/config.php';
+require_once __DIR__ . '/auth/config.php';
 $user_id = get_user_id_from_token($link);
 if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
 
@@ -533,7 +533,7 @@ mysqli_close($link);
 ```php
 <?php
 // /api/data.php
-include_once 'auth/config.php';
+require_once __DIR__ . '/auth/config.php';
 $user_id = get_user_id_from_token($link);
 if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
 
