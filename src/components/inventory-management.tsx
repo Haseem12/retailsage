@@ -1,7 +1,7 @@
 
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
@@ -13,25 +13,52 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-
-// Add a stock property to the Product type for this component
-type InventoryProduct = Product & { stock: number };
-
-const initialProducts: InventoryProduct[] = PRODUCTS.map(p => ({
-  ...p,
-  stock: Math.floor(Math.random() * 100), // Simulate stock quantity
-}));
+import { useLocalStorage } from '@/hooks/use-local-storage';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogTrigger,
+  DialogClose
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 
 export default function InventoryManagement() {
-  const [products, setProducts] = useState<InventoryProduct[]>(initialProducts);
+  const [products, setProducts] = useLocalStorage<Product[]>('products', PRODUCTS);
+  const [isClient, setIsClient] = useState(false);
+
+  // Form state for new product
+  const [newProductName, setNewProductName] = useState('');
+  const [newProductPrice, setNewProductPrice] = useState('');
+  const [newProductCategory, setNewProductCategory] = useState('Groceries');
+  const [newProductIcon, setNewProductIcon] = useState('Apple');
+  const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const handleAddProduct = () => {
-    // In a real app, this would open a form/modal to add a new product.
-    alert('This would open a form to add a new product.');
-  };
-
-  const handleEditProduct = (id: number) => {
-    alert(`This would open a form to edit product ${id}.`);
+    if (!newProductName || !newProductPrice) {
+      alert('Please fill in all fields.');
+      return;
+    }
+    const newProduct: Product = {
+      id: products.length > 0 ? Math.max(...products.map(p => p.id)) + 1 : 1,
+      name: newProductName,
+      price: parseFloat(newProductPrice),
+      category: newProductCategory,
+      icon: newProductIcon,
+    };
+    setProducts([...products, newProduct]);
+    
+    // Reset form and close dialog
+    setNewProductName('');
+    setNewProductPrice('');
+    setIsAddDialogOpen(false);
   };
 
   const handleDeleteProduct = (id: number) => {
@@ -40,6 +67,10 @@ export default function InventoryManagement() {
     }
   };
 
+  if (!isClient) {
+    return null; // Don't render on the server
+  }
+
   return (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between">
@@ -47,10 +78,35 @@ export default function InventoryManagement() {
           <CardTitle>Inventory Management</CardTitle>
           <CardDescription>View, add, and manage your product stock.</CardDescription>
         </div>
-        <Button onClick={handleAddProduct}>
-          <PlusCircle className="mr-2" />
-          Add Product
-        </Button>
+        <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+          <DialogTrigger asChild>
+            <Button>
+              <PlusCircle className="mr-2" />
+              Add Product
+            </Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Add New Product</DialogTitle>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="name" className="text-right">Name</Label>
+                <Input id="name" value={newProductName} onChange={e => setNewProductName(e.target.value)} className="col-span-3" />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="price" className="text-right">Price (₦)</Label>
+                <Input id="price" type="number" value={newProductPrice} onChange={e => setNewProductPrice(e.target.value)} className="col-span-3" />
+              </div>
+            </div>
+            <DialogFooter>
+              <DialogClose asChild>
+                <Button variant="outline">Cancel</Button>
+              </DialogClose>
+              <Button onClick={handleAddProduct}>Add Product</Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </CardHeader>
       <CardContent>
         <div className="overflow-x-auto">
@@ -60,7 +116,6 @@ export default function InventoryManagement() {
                 <TableHead>Product</TableHead>
                 <TableHead>Category</TableHead>
                 <TableHead className="text-right">Price</TableHead>
-                <TableHead className="text-right">Stock</TableHead>
                 <TableHead className="text-center">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -71,7 +126,6 @@ export default function InventoryManagement() {
                     <TableCell className="font-medium">{product.name}</TableCell>
                     <TableCell>{product.category}</TableCell>
                     <TableCell className="text-right">₦{product.price.toFixed(2)}</TableCell>
-                    <TableCell className="text-right">{product.stock}</TableCell>
                     <TableCell className="text-center">
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
@@ -81,9 +135,9 @@ export default function InventoryManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                          <DropdownMenuItem onClick={() => handleEditProduct(product.id)}>
+                           <DropdownMenuItem disabled>
                             <Edit className="mr-2 h-4 w-4" />
-                            <span>Edit</span>
+                            <span>Edit (Soon)</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem
                             onClick={() => handleDeleteProduct(product.id)}
@@ -99,7 +153,7 @@ export default function InventoryManagement() {
                 ))
               ) : (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     No products found.
                   </TableCell>
                 </TableRow>

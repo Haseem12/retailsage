@@ -1,31 +1,16 @@
 
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
-  Apple,
-  Milk,
-  Sandwich,
-  Drumstick,
-  Shirt,
-  PersonStanding,
-  Laptop,
-  Headphones,
-  Fuel,
-  Coffee,
-  Croissant,
-  X,
-  Plus,
-  Minus,
-  Divide,
-  Calculator,
-  Trash2,
-  PackageOpen,
+  Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
+  Minus, Plus, Trash2, PackageOpen, Calculator
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { PRODUCTS, type Product } from '@/lib/constants';
+import { Product } from '@/lib/constants';
+import { useLocalStorage } from '@/hooks/use-local-storage';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReceiptModal, { type ReceiptItem } from './receipt-modal';
 import { Separator } from './ui/separator';
@@ -37,13 +22,28 @@ const iconMap: { [key: string]: React.ElementType } = {
 
 type CartItem = Product & { quantity: number };
 
+interface Sale {
+  items: ReceiptItem[];
+  subtotal: number;
+  tax: number;
+  total: number;
+  date: string;
+}
+
 export default function PosSystem() {
   const [cart, setCart] = useState<CartItem[]>([]);
   const [activeTab, setActiveTab] = useState('pos');
   const [calculatorInput, setCalculatorInput] = useState('');
   const [showReceipt, setShowReceipt] = useState(false);
-  const [receiptItems, setReceiptItems] = useState<ReceiptItem[]>([]);
-  const [products] = useState<Product[]>(PRODUCTS);
+  const [receiptData, setReceiptData] = useState<{items: ReceiptItem[], subtotal: number} | null>(null);
+
+  const [products] = useLocalStorage<Product[]>('products', []);
+  const [sales, setSales] = useLocalStorage<Sale[]>('sales', []);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -79,7 +79,6 @@ export default function PosSystem() {
       setCalculatorInput('');
     } else if (value === '=') {
       try {
-        // Caution: eval is used for simplicity. Not for production without sanitization.
         const result = eval(calculatorInput.replace(/[^-()\d/*+.]/g, ''));
         setCalculatorInput(result.toString());
       } catch (error) {
@@ -92,10 +91,25 @@ export default function PosSystem() {
 
   const handlePay = () => {
     if (cart.length === 0) return;
-    setReceiptItems(cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })));
+
+    const newSale: Sale = {
+      items: cart.map(item => ({ name: item.name, quantity: item.quantity, price: item.price })),
+      subtotal,
+      tax,
+      total,
+      date: new Date().toISOString(),
+    };
+    
+    setSales([...sales, newSale]);
+    
+    setReceiptData({items: newSale.items, subtotal: newSale.subtotal});
     setShowReceipt(true);
     setCart([]);
   };
+  
+  if (!isClient) {
+      return null; // Don't render on server
+  }
 
   const ProductGrid = () => {
     if (products.length === 0) {
@@ -113,16 +127,16 @@ export default function PosSystem() {
       )
     }
     return (
-      <Tabs defaultValue={categories[0]} className="w-full">
+      <Tabs defaultValue={categories[0] || ''} className="w-full">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
           {categories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
         </TabsList>
         {categories.map(cat => (
            <TabsContent key={cat} value={cat}>
-             <ScrollArea className="h-[65vh] lg:h-auto lg:max-h-[calc(100vh-22rem)]">
+             <ScrollArea className="h-[calc(100vh-28rem)]">
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
                 {products.filter(p => p.category === cat).map((product) => {
-                  const Icon = iconMap[product.icon] || Calculator;
+                  const Icon = iconMap[product.icon] || PackageOpen;
                   return (
                     <Button
                       key={product.id}
@@ -226,14 +240,12 @@ export default function PosSystem() {
         </Card>
       </div>
 
-      <ReceiptModal 
+      {receiptData && <ReceiptModal 
         isOpen={showReceipt} 
         onClose={() => setShowReceipt(false)} 
-        items={receiptItems}
-        subtotal={receiptItems.reduce((acc, item) => acc + item.price * item.quantity, 0)}
-      />
+        items={receiptData.items}
+        subtotal={receiptData.subtotal}
+      />}
     </div>
   );
 }
-
-    
