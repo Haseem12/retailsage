@@ -232,6 +232,15 @@ This script handles the form submission from the welcome page.
 // Note: This config file is one directory up
 include_once 'auth/config.php';
 
+// The include_once statement might fail silently. 
+// A 500 error on this script usually means the database connection ($link) is not available.
+// First, check if the $link variable exists after the include.
+if (!isset($link) || $link === false) {
+    http_response_code(500);
+    echo json_encode(["message" => "Database connection failed. Check config.php path and credentials."]);
+    exit();
+}
+
 $data = json_decode(file_get_contents("php://input"));
 
 if (
@@ -245,7 +254,7 @@ if (
     $business_address = mysqli_real_escape_string($link, $data->businessAddress);
     $shop_type = mysqli_real_escape_string($link, $data->shopType);
 
-    // Optional: Check if the user ID exists in the users table
+    // Check if the user ID exists in the users table
     $sql_check = "SELECT id FROM users WHERE id = ?";
     if($stmt_check = mysqli_prepare($link, $sql_check)) {
         mysqli_stmt_bind_param($stmt_check, "i", $user_id);
