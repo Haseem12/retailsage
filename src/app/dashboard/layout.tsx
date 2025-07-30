@@ -20,8 +20,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
 import RetailLabLogo from '@/components/retaillab-logo';
 import { Loader2 } from 'lucide-react';
-import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { cn } from '@/lib/utils';
 
 const allNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
@@ -33,6 +33,14 @@ const allNavItems = [
   { href: '/dashboard/fuel-management', label: 'Fuel', icon: Flame, shopTypes: ['Fuel Station'] },
   { href: '/dashboard/settings', label: 'Settings', icon: Settings, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Fuel Station', 'Other'] },
 ];
+
+const mobileNavItems = [
+  { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { href: '/dashboard/make-sale', label: 'Sale', icon: ShoppingCart },
+  { href: '/dashboard/inventory', label: 'Inventory', icon: BookOpen },
+  { href: '/dashboard/sales-history', label: 'History', icon: BarChart2 },
+  { href: '/dashboard/sales-summary', label: 'Summary', icon: DollarSign },
+]
 
 export default function DashboardLayout({
   children,
@@ -46,8 +54,6 @@ export default function DashboardLayout({
   const [navItems, setNavItems] = useState(allNavItems);
   const isMobile = useIsMobile();
   
-  const currentTab = navItems.find(item => item.href === pathname)?.href || navItems[0]?.href;
-
   useEffect(() => {
     const token = sessionStorage.getItem('user-token');
     if (!token) {
@@ -119,23 +125,37 @@ export default function DashboardLayout({
         </SidebarFooter>
       </Sidebar>
       <SidebarInset>
-        <header className="flex items-center justify-between p-4 border-b">
-           {isMobile ? 
-              <div className="flex-1 overflow-x-auto">
-                 <Tabs value={currentTab} onValueChange={(value) => router.push(value)} className="w-full">
-                  <TabsList>
-                    {navItems.map((item) => (
-                      <TabsTrigger key={item.href} value={item.href}>{item.label}</TabsTrigger>
-                    ))}
-                  </TabsList>
-                </Tabs>
-              </div>
-              : <SidebarTrigger />
-            }
+        <header className="flex items-center justify-between p-4 border-b md:hidden">
+          <Link href="/dashboard" className="flex items-center gap-2">
+            <RetailLabLogo className="size-7" />
+            <span className="text-lg font-semibold font-headline">RetailLab</span>
+          </Link>
         </header>
-        <main className="p-4 sm:p-6 lg:p-8 bg-background/60 flex-1">
+        <main className="p-4 sm:p-6 lg:p-8 bg-background/60 flex-1 pb-20 md:pb-8">
           {children}
         </main>
+         {isMobile && (
+          <div className="fixed bottom-0 left-0 right-0 bg-card border-t z-50 md:hidden">
+            <div className="grid grid-cols-5">
+              {mobileNavItems.map((item) => {
+                const isActive = pathname === item.href;
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex flex-col items-center justify-center gap-1 p-2 text-xs",
+                      isActive ? "text-primary" : "text-muted-foreground"
+                    )}
+                  >
+                    <item.icon className="h-5 w-5" />
+                    <span>{item.label}</span>
+                  </Link>
+                );
+              })}
+            </div>
+          </div>
+        )}
       </SidebarInset>
     </SidebarProvider>
   );
