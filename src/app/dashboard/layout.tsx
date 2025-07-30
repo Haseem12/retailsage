@@ -158,30 +158,44 @@ export default function DashboardLayout({
           </p>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
-        <header className="flex items-center justify-between p-2 border-b h-14">
+      <SidebarInset className="flex flex-col">
+        <header className="sticky top-0 z-50 flex items-center justify-between p-2 border-b h-14 bg-card/80 backdrop-blur-sm">
             <div className="flex items-center gap-2">
                 <RetailSageLogo className="size-7" />
                 <span className="text-lg font-semibold font-headline">RetailSage</span>
             </div>
             
             <div className="flex items-center gap-2">
-                <Avatar className="h-8 w-8">
-                    <AvatarImage src={"https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
-                    <AvatarFallback>U</AvatarFallback>
-                </Avatar>
-                <Button variant="ghost" size="icon" onClick={() => router.push('/dashboard/settings')} aria-label="Settings">
-                    <Settings />
-                </Button>
-                <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
-                    <LogOut />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Avatar className="h-8 w-8 cursor-pointer">
+                        <AvatarImage src={"https://placehold.co/40x40.png"} data-ai-hint="manager avatar" alt="User" />
+                        <AvatarFallback>U</AvatarFallback>
+                    </Avatar>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end">
+                     <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+                        <User className="mr-2 h-4 w-4" />
+                        <span>Profile</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => router.push('/dashboard/settings')}>
+                        <Settings className="mr-2 h-4 w-4" />
+                        <span>Settings</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem onClick={handleLogout}>
+                        <LogOut className="mr-2 h-4 w-4" />
+                        <span>Logout</span>
+                      </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
             </div>
         </header>
 
-        <main className="p-4 sm:p-6 lg:p-8 bg-background/60 flex-1 pb-20 md:pb-8">
+        <main className="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-background/60 pb-20 md:pb-8">
           {children}
         </main>
+
          {isMobile && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t z-50 md:hidden">
             <div className="grid grid-cols-5">
