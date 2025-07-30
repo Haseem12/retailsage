@@ -10,6 +10,7 @@ The frontend sends `POST` requests with a JSON body to the following endpoints:
 - **/api/sales.php**
 - **/api/spoilage.php**
 - **/api/data.php**
+- **/api/users.php**
 
 
 You will need a web server (like Apache or Nginx) with PHP and a MySQL database.
@@ -29,7 +30,8 @@ Organize your backend files in a directory structure like this on your server:
 │   ├── products.php
 │   ├── sales.php
 │   ├── spoilage.php
-│   └── data.php
+│   ├── data.php
+│   └── users.php
 ```
 
 ## 2. Database Setup
@@ -602,6 +604,36 @@ if ($method == 'GET' && $_GET['action'] == 'backup') {
         mysqli_rollback($link);
         http_response_code(500);
         echo json_encode(["message" => "Failed to restore data", "error" => $e->getMessage()]);
+    }
+}
+mysqli_close($link);
+```
+
+### `/api/users.php`
+```php
+<?php
+// /api/users.php
+require_once __DIR__ . '/auth/config.php';
+$user_id = get_user_id_from_token($link);
+if (!$user_id) {
+    http_response_code(401);
+    echo json_encode(["message" => "Unauthorized"]);
+    exit();
+}
+
+$method = $_SERVER['REQUEST_METHOD'];
+
+if ($method == 'GET') {
+    $action = $_GET['action'] ?? null;
+    if ($action == 'read_all') {
+        // This should be an admin-only action in a real app
+        $sql = "SELECT u.id, u.email, bd.business_name, bd.shop_type FROM users u LEFT JOIN business_details bd ON u.id = bd.user_id";
+        if($stmt = mysqli_prepare($link, $sql)){
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $users = mysqli_fetch_all($result, MYSQLI_ASSOC);
+            echo json_encode(["users" => $users]);
+        }
     }
 }
 mysqli_close($link);
