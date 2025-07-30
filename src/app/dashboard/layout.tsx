@@ -14,12 +14,14 @@ import {
 } from '@/components/ui/sidebar';
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LayoutDashboard, Shield, Flame, Settings, LogOut, Building, Utensils, Tv, ShoppingCart, Shirt } from 'lucide-react';
+import { LayoutDashboard, Shield, Flame, Settings, LogOut } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
 import RetailLabLogo from '@/components/retaillab-logo';
 import { Loader2 } from 'lucide-react';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const allNavItems = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, shopTypes: ['Supermarket/FMCG', 'Apparel Store', 'Electronics Store', 'Restaurant', 'Other'] },
@@ -38,6 +40,9 @@ export default function DashboardLayout({
   const [loading, setLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [navItems, setNavItems] = useState(allNavItems);
+  const isMobile = useIsMobile();
+  
+  const currentTab = navItems.find(item => item.href === pathname)?.href || navItems[0]?.href;
 
   useEffect(() => {
     const token = sessionStorage.getItem('user-token');
@@ -111,11 +116,18 @@ export default function DashboardLayout({
       </Sidebar>
       <SidebarInset>
         <header className="flex items-center justify-between p-4 border-b">
-          <SidebarTrigger />
-          <h1 className="text-2xl font-bold font-headline capitalize">
-             {pathname.split('/').pop()?.replace('-', ' ') || 'Dashboard'}
-          </h1>
-          <Button>New Sale</Button>
+           {isMobile ? 
+              <div className="flex-1 overflow-x-auto">
+                 <Tabs value={currentTab} onValueChange={(value) => router.push(value)} className="w-full">
+                  <TabsList>
+                    {navItems.map((item) => (
+                      <TabsTrigger key={item.href} value={item.href}>{item.label}</TabsTrigger>
+                    ))}
+                  </TabsList>
+                </Tabs>
+              </div>
+              : <SidebarTrigger />
+            }
         </header>
         <main className="p-4 sm:p-6 lg:p-8 bg-background/60 flex-1">
           {children}
