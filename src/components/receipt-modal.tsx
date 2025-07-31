@@ -1,3 +1,4 @@
+
 'use client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -7,7 +8,8 @@ import { Input } from './ui/input';
 import { Label } from './ui/label';
 import type { ReceiptItem } from '@/lib/types';
 import { toPng } from 'html-to-image';
-import { Loader2 } from 'lucide-react';
+import { Loader2, Copy } from 'lucide-react';
+import { useToast } from '@/hooks/use-toast';
 
 interface ReceiptModalProps {
   isOpen: boolean;
@@ -21,14 +23,16 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   const receiptRef = useRef<HTMLDivElement>(null);
   const [businessDetails, setBusinessDetails] = useState({ name: 'RetailSage', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
   const [showDetailsForm, setShowDetailsForm] = useState(false);
-  const [isAndroid, setIsAndroid] = useState(false);
-  const [isPrinting, setIsPrinting] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+  const [printUrl, setPrintUrl] = useState('');
+  const { toast } = useToast();
   
   const [rcInput, setRcInput] = useState('');
   const [phoneInput, setPhoneInput] = useState('');
 
   useEffect(() => {
     if (isOpen) {
+      setPrintUrl(''); // Reset URL when modal opens
       const name = localStorage.getItem('businessName') || 'RetailSage';
       const address = localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA';
       const rcNumber = localStorage.getItem('rcNumber') || '';
@@ -44,42 +48,61 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
         setShowDetailsForm(false);
       }
     }
-    setIsAndroid(/android/i.test(navigator.userAgent));
   }, [isOpen]);
 
   const total = subtotal;
   const date = new Date();
 
-  const handlePrint = async () => {
+  const handleGenerateUrl = async () => {
     if (!receiptRef.current) return;
-    setIsPrinting(true);
+    setIsGenerating(true);
+    setPrintUrl('');
 
     try {
       const dataUrl = await toPng(receiptRef.current, { cacheBust: true });
       const imageBlob = await fetch(dataUrl).then(res => res.blob());
-      const imageUrl = URL.createObjectURL(imageBlob);
-
+      
+      // We need a persistent URL, so we can't use `createObjectURL` as it's session-specific.
+      // A simple solution is to upload the image somewhere or use the long dataURI.
+      // Let's use the dataURI directly. The printing app must support it.
+      // This is a trade-off for not having a dedicated image upload service.
+      
       const printPayload = [
         {
           type: 1, // image
-          path: imageUrl,
+          path: dataUrl, // Use the base64 data URI
           align: 1, // center
         },
       ];
       
-      const printUrl = `my.bluetoothprint.scheme://${encodeURIComponent(JSON.stringify(printPayload))}`;
-      
-      // Since direct navigation might be blocked, creating a link for the user to click.
-      const a = document.createElement('a');
-      a.href = printUrl;
-      a.click();
+      const generatedUrl = `my.bluetoothprint.scheme://${encodeURIComponent(JSON.stringify(printPayload))}`;
+      setPrintUrl(generatedUrl);
+      toast({ title: 'Print URL Generated', description: 'You can now copy the URL or launch the print app.' });
 
     } catch (err) {
       console.error('oops, something went wrong!', err);
+      toast({ variant: 'destructive', title: 'Error Generating Image', description: 'Could not create the receipt image.' });
     } finally {
-        setIsPrinting(false);
+        setIsGenerating(false);
     }
   };
+
+  const handleCopy = () => {
+    if (!printUrl) return;
+    navigator.clipboard.writeText(printUrl).then(() => {
+        toast({ title: 'URL Copied!', description: 'The print URL has been copied to your clipboard.'});
+    }, (err) => {
+        toast({ variant: 'destructive', title: 'Copy Failed', description: 'Could not copy the URL.'});
+        console.error('Could not copy text: ', err);
+    });
+  };
+
+  const handleLaunchPrint = () => {
+    if (!printUrl) return;
+    const a = document.createElement('a');
+    a.href = printUrl;
+    a.click();
+  }
 
   const handleSaveDetails = () => {
     localStorage.setItem('rcNumber', rcInput);
@@ -147,19 +170,36 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
         </div>
         <p className="text-center text-xs mt-4">Thank you for your purchase!</p>
       </div>
+      
+      {printUrl && (
+          <div className="space-y-2 mt-4">
+            <Label htmlFor="printUrl">Print URL</Label>
+            <div className="flex gap-2">
+                <Input id="printUrl" readOnly value={printUrl} className="text-xs" />
+                <Button variant="outline" size="icon" onClick={handleCopy}>
+                    <Copy className="h-4 w-4" />
+                </Button>
+            </div>
+          </div>
+      )}
+
       <DialogFooter className="mt-4">
-        <Button onClick={handlePrint} variant="outline" disabled={isPrinting}>
-           {isPrinting ? <Loader2 className="mr-2 animate-spin"/> : null}
-           Print
-        </Button>
-        <Button onClick={onClose} className="bg-accent text-accent-foreground hover:bg-accent/90">Close</Button>
+        {printUrl ? (
+             <Button onClick={handleLaunchPrint} className="bg-accent text-accent-foreground hover:bg-accent/90">Launch Print</Button>
+        ) : (
+            <Button onClick={handleGenerateUrl} variant="outline" disabled={isGenerating}>
+               {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
+               Generate Print URL
+            </Button>
+        )}
+        <Button onClick={onClose}>Close</Button>
       </DialogFooter>
     </>
   );
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-sm font-mono text-sm bg-card/90 backdrop-blur-sm">
+      <DialogContent className="sm:max-w-md font-mono text-sm bg-card/90 backdrop-blur-sm">
         {showDetailsForm ? renderDetailsForm() : renderReceiptContent()}
       </DialogContent>
     </Dialog>
