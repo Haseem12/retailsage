@@ -28,6 +28,8 @@ export default function WelcomeForm() {
   const [businessName, setBusinessName] = useState('');
   const [businessAddress, setBusinessAddress] = useState('');
   const [shopType, setShopType] = useState('');
+  const [rcNumber, setRcNumber] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [userId, setUserId] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null);
@@ -37,7 +39,6 @@ export default function WelcomeForm() {
     const storedUserId = sessionStorage.getItem('new-user-id');
     if (!storedUserId) {
       setMessage({ type: 'error', text: 'No user ID found. Please sign up again.' });
-      // Redirect after a short delay to allow user to read the message
       setTimeout(() => router.push('/signup'), 3000);
     } else {
       setUserId(storedUserId);
@@ -59,7 +60,7 @@ export default function WelcomeForm() {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ userId, businessName, businessAddress, shopType }),
+        body: JSON.stringify({ userId, businessName, businessAddress, shopType, rcNumber, phoneNumber }),
       });
 
       const data = await response.json();
@@ -71,6 +72,8 @@ export default function WelcomeForm() {
       localStorage.setItem('shopType', shopType);
       localStorage.setItem('businessName', businessName);
       localStorage.setItem('businessAddress', businessAddress);
+      localStorage.setItem('rcNumber', rcNumber);
+      localStorage.setItem('phoneNumber', phoneNumber);
       
       sessionStorage.removeItem('new-user-id');
 
@@ -141,6 +144,14 @@ export default function WelcomeForm() {
                 </SelectContent>
             </Select>
           </div>
+           <div className="space-y-2">
+                <Label htmlFor="rcNumber">RC Number (Optional)</Label>
+                <Input id="rcNumber" value={rcNumber} onChange={(e) => setRcNumber(e.target.value)} placeholder="e.g. 123456" className="bg-background/70" />
+            </div>
+            <div className="space-y-2">
+                <Label htmlFor="phoneNumber">Phone Number (Optional)</Label>
+                <Input id="phoneNumber" value={phoneNumber} onChange={(e) => setPhoneNumber(e.target.value)} placeholder="e.g. 080-1234-5678" className="bg-background/70" />
+            </div>
         </CardContent>
         <CardFooter>
           <Button type="submit" className="w-full bg-accent text-accent-foreground hover:bg-accent/90" disabled={isLoading || !userId}>

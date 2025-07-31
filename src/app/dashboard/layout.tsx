@@ -95,7 +95,11 @@ export default function DashboardLayout({
 
   const handleLogout = () => {
     sessionStorage.removeItem('user-token');
-    localStorage.clear();
+    // Selectively clear localStorage instead of wiping everything
+    localStorage.removeItem('shopType');
+    localStorage.removeItem('businessName');
+    localStorage.removeItem('businessAddress');
+    // We keep rcNumber and phoneNumber
     router.push('/login');
   };
   

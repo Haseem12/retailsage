@@ -275,13 +275,15 @@ $user_id = (int)$data->userId;
 $business_name = mysqli_real_escape_string($link, $data->businessName);
 $business_address = mysqli_real_escape_string($link, $data->businessAddress);
 $shop_type = mysqli_real_escape_string($link, $data->shopType);
+$rc_number = isset($data->rcNumber) ? mysqli_real_escape_string($link, $data->rcNumber) : null;
+$phone_number = isset($data->phoneNumber) ? mysqli_real_escape_string($link, $data->phoneNumber) : null;
 
 // Using INSERT ... ON DUPLICATE KEY UPDATE to handle both new and existing entries
-$sql = "INSERT INTO business_details (user_id, business_name, business_address, shop_type) VALUES (?, ?, ?, ?)
-        ON DUPLICATE KEY UPDATE business_name = VALUES(business_name), business_address = VALUES(business_address), shop_type = VALUES(shop_type)";
+$sql = "INSERT INTO business_details (user_id, business_name, business_address, shop_type, rc_number, phone_number) VALUES (?, ?, ?, ?, ?, ?)
+        ON DUPLICATE KEY UPDATE business_name = VALUES(business_name), business_address = VALUES(business_address), shop_type = VALUES(shop_type), rc_number = VALUES(rc_number), phone_number = VALUES(phone_number)";
 
 if ($stmt = mysqli_prepare($link, $sql)) {
-    mysqli_stmt_bind_param($stmt, "isss", $user_id, $business_name, $business_address, $shop_type);
+    mysqli_stmt_bind_param($stmt, "isssss", $user_id, $business_name, $business_address, $shop_type, $rc_number, $phone_number);
     if (mysqli_stmt_execute($stmt)) {
         http_response_code(201);
         echo json_encode(["message" => "Business details saved successfully."]);

@@ -53,6 +53,12 @@ export default function LoginForm() {
       if (data.businessAddress) {
         localStorage.setItem('businessAddress', data.businessAddress);
       }
+      if (data.rcNumber) {
+        localStorage.setItem('rcNumber', data.rcNumber);
+      }
+      if (data.phoneNumber) {
+        localStorage.setItem('phoneNumber', data.phoneNumber);
+      }
 
       if (data.shopType === 'Fuel Station') {
         router.push('/dashboard/fuel-management');
