@@ -13,42 +13,42 @@ interface PrintEntry {
 }
 
 export async function GET(request: NextRequest) {
-    const { searchParams } = new URL(request.url);
-    const saleIdWithPrefix = searchParams.get('saleId');
-
-    if (!saleIdWithPrefix) {
-        return NextResponse.json({ error: "No saleId provided" }, { status: 400 });
-    }
-    
-    // The saleId from the client can be `sale_123`, we need just the numeric part
-    const saleId = saleIdWithPrefix.replace(/[^0-9]/g, '');
-    if (!saleId) {
-        return NextResponse.json({ error: "Invalid saleId format" }, { status: 400 });
-    }
-
     try {
+        const { searchParams } = new URL(request.url);
+        const saleIdWithPrefix = searchParams.get('saleId');
+
+        if (!saleIdWithPrefix) {
+            return NextResponse.json({ error: "No saleId provided" }, { status: 400 });
+        }
+        
+        // The saleId from the client can be `sale_123`, we need just the numeric part
+        const saleId = saleIdWithPrefix.replace(/[^0-9]/g, '');
+        if (!saleId) {
+            return NextResponse.json({ error: "Invalid saleId format" }, { status: 400 });
+        }
+
         const res = await fetch(`${API_BASE_URL}/api/sales.php?action=read_single&id=${saleId}`);
         
         if (!res.ok) {
-            const errorData = await res.json();
+            const errorData = await res.json().catch(() => ({ message: 'Failed to decode error from backend.' }));
             throw new Error(errorData.message || `Failed to fetch sale data, status: ${res.status}`);
         }
 
         const saleData = await res.json();
         
-        if (!saleData || !saleData.items) {
-             return NextResponse.json({ error: "Sale not found or is invalid" }, { status: 404 });
+        if (!saleData) {
+             return NextResponse.json({ error: "Sale not found" }, { status: 404 });
         }
 
-        // Ensure numeric types are correct
+        // Ensure numeric types are correct and items exist
         const sale = {
             ...saleData,
             total: parseFloat(saleData.total),
-            items: saleData.items.map((item: any) => ({
+            items: Array.isArray(saleData.items) ? saleData.items.map((item: any) => ({
                 ...item,
                 quantity: parseInt(item.quantity, 10),
                 price: parseFloat(item.price)
-            }))
+            })) : []
         };
 
 
@@ -57,7 +57,7 @@ export async function GET(request: NextRequest) {
         // Title
         printPayload.push({
             type: 0,
-            content: sale.business_name,
+            content: sale.business_name || 'Your Business',
             bold: 1,
             align: 1,
             format: 1
@@ -66,7 +66,7 @@ export async function GET(request: NextRequest) {
         // Address
         printPayload.push({
             type: 0,
-            content: sale.business_address,
+            content: sale.business_address || 'Your Address',
             bold: 0,
             align: 1,
             format: 4
@@ -133,6 +133,7 @@ export async function GET(request: NextRequest) {
         });
 
     } catch (error: any) {
+        console.error("Error in /api/print:", error);
         return NextResponse.json({ error: error.message }, { status: 500 });
     }
 }
