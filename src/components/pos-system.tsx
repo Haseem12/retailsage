@@ -4,12 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
-  Minus, Plus, Trash2, PackageOpen, Calculator, Loader2
+  Minus, Plus, Trash2, PackageOpen, Calculator, Loader2, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Product, Sale } from '@/lib/types';
+import { Product } from '@/lib/types';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import ReceiptModal from './receipt-modal';
 import { Separator } from './ui/separator';
@@ -28,8 +27,7 @@ type CartItem = Product & { quantity: number };
 
 export default function PosSystem() {
   const [cart, setCart] = useState<CartItem[]>([]);
-  const [activeTab, setActiveTab] = useState('calc');
-  const [calculatorInput, setCalculatorInput] = useState('');
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [showReceipt, setShowReceipt] = useState(false);
   const [receiptData, setReceiptData] = useState<{items: any[], subtotal: number, saleId: string} | null>(null);
   const { toast } = useToast();
@@ -57,10 +55,6 @@ export default function PosSystem() {
 
       setProducts(availableProducts);
 
-      if (availableProducts.length > 0) {
-        const initialCategory = availableProducts.find((p: Product) => p.category)?.category || 'pos';
-        setActiveTab(initialCategory);
-      }
     } catch (error: any) {
       toast({ variant: 'destructive', title: 'Error fetching products', description: error.message });
     } finally {
@@ -113,22 +107,7 @@ export default function PosSystem() {
   const subtotal = cart.reduce((acc, item) => acc + item.price * item.quantity, 0);
   const total = subtotal;
   
-  const categories = ['calc', ...new Set(products.map(p => p.category))];
-
-  const handleCalcInput = (value: string) => {
-     if (value === 'C') {
-      setCalculatorInput('');
-    } else if (value === '=') {
-      try {
-        const result = eval(calculatorInput.replace(/[^-()\d/*+.]/g, ''));
-        setCalculatorInput(result.toString());
-      } catch (error) {
-        setCalculatorInput('Error');
-      }
-    } else {
-      setCalculatorInput(prev => prev + value);
-    }
-  }
+  const categories = [...new Set(products.map(p => p.category))];
 
   const handlePay = async () => {
     if (cart.length === 0) return;
@@ -175,7 +154,7 @@ export default function PosSystem() {
       return null; // Don't render on server
   }
 
-  const ProductGrid = () => {
+  const renderProductGrid = () => {
     if (loadingProducts) {
       return <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin" /></div>;
     }
@@ -193,69 +172,90 @@ export default function PosSystem() {
           </Alert>
       )
     }
-    const productCategories = [...new Set(products.map(p => p.category))];
+
+    const productsToShow = products.filter(p => p.category === selectedCategory);
 
     return (
-      <Tabs defaultValue={productCategories[0] || ''} value={activeTab} onValueChange={setActiveTab} className="w-full">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4">
-          <TabsTrigger value="calc"><Calculator className="w-4 h-4 mr-1" /> Calculator</TabsTrigger>
-          {productCategories.map(cat => <TabsTrigger key={cat} value={cat}>{cat}</TabsTrigger>)}
-        </TabsList>
-        {productCategories.map(cat => (
-           <TabsContent key={cat} value={cat}>
-             <ScrollArea className="h-[calc(100vh-28rem)]">
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
-                {products.filter(p => p.category === cat).map((product) => {
-                  const Icon = iconMap[product.icon] || PackageOpen;
-                  const isOutOfStock = product.stock <= 0;
-                  return (
-                    <Button
-                      key={product.id}
-                      variant="outline"
-                      className="h-28 flex flex-col gap-1 p-2 justify-center relative"
-                      onClick={() => addToCart(product)}
-                      disabled={isOutOfStock}
-                    >
-                      {isOutOfStock && <Badge variant="destructive" className="absolute -top-2 -right-2">Out of Stock</Badge>}
-                      <Icon className={cn("w-8 h-8 text-primary", isOutOfStock && "opacity-50")} />
-                      <span className="text-xs text-center break-words">{product.name}</span>
-                      <span className="text-xs font-bold">₦{product.price.toFixed(2)}</span>
-                    </Button>
-                  );
-                })}
-              </div>
-             </ScrollArea>
-          </TabsContent>
-        ))}
-         <TabsContent value="calc">
-          <CalculatorTab />
-        </TabsContent>
-      </Tabs>
+      <ScrollArea className="h-[calc(100vh-28rem)]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
+          {productsToShow.map((product) => {
+            const Icon = iconMap[product.icon] || PackageOpen;
+            const isOutOfStock = product.stock <= 0;
+            return (
+              <Button
+                key={product.id}
+                variant="outline"
+                className="h-28 flex flex-col gap-1 p-2 justify-center relative"
+                onClick={() => addToCart(product)}
+                disabled={isOutOfStock}
+              >
+                {isOutOfStock && <Badge variant="destructive" className="absolute -top-2 -right-2">Out of Stock</Badge>}
+                <Icon className={cn("w-8 h-8 text-primary", isOutOfStock && "opacity-50")} />
+                <span className="text-xs text-center break-words">{product.name}</span>
+                <span className="text-xs font-bold">₦{product.price.toFixed(2)}</span>
+              </Button>
+            );
+          })}
+        </div>
+      </ScrollArea>
+    );
+  };
+
+  const renderCategoryGrid = () => {
+     if (loadingProducts) {
+      return <div className="flex justify-center items-center h-64"><Loader2 className="w-8 h-8 animate-spin" /></div>;
+    }
+    if (categories.length === 0) {
+       return (
+         <Alert>
+            <PackageOpen className="h-4 w-4" />
+            <AlertTitle>No Products or Categories Found</AlertTitle>
+            <AlertDescription>
+              Please add products with categories in your inventory to begin.
+              <Button asChild variant="link" className="p-0 h-auto ml-1">
+                <Link href="/dashboard/inventory/add">Add Product</Link>
+              </Button>
+            </AlertDescription>
+          </Alert>
+      )
+    }
+    return (
+      <ScrollArea className="h-[calc(100vh-28rem)]">
+        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 xl:grid-cols-8 gap-4 p-1">
+          {categories.map((category) => (
+            <Button
+              key={category}
+              variant="outline"
+              className="h-28 flex flex-col gap-1 p-2 justify-center"
+              onClick={() => setSelectedCategory(category)}
+            >
+              <PackageOpen className="w-10 h-10 text-primary" />
+              <span className="text-sm font-semibold">{category}</span>
+            </Button>
+          ))}
+        </div>
+      </ScrollArea>
     );
   }
-
-  const CalculatorTab = () => (
-    <div className="p-4 flex flex-col gap-2 max-w-xs mx-auto">
-        <input type="text" value={calculatorInput} readOnly className="w-full bg-muted p-2 rounded-md text-right text-2xl font-mono"/>
-        <div className="grid grid-cols-4 gap-2">
-            {['7','8','9','/'].map(c => <Button key={c} variant="outline" className="h-14 text-lg" onClick={() => handleCalcInput(c)}>{c}</Button>)}
-            {['4','5','6','*'].map(c => <Button key={c} variant="outline" className="h-14 text-lg" onClick={() => handleCalcInput(c)}>{c}</Button>)}
-            {['1','2','3','-'].map(c => <Button key={c} variant="outline" className="h-14 text-lg" onClick={() => handleCalcInput(c)}>{c}</Button>)}
-            {['0','.','+'].map(c => <Button key={c} variant="outline" className="h-14 text-lg" onClick={() => handleCalcInput(c)}>{c}</Button>)}
-            <Button variant="outline" className="h-14 text-lg" onClick={() => handleCalcInput('C')}>C</Button>
-            <Button className="h-14 text-lg col-span-3 bg-accent text-accent-foreground" onClick={() => handleCalcInput('=')}>=</Button>
-        </div>
-    </div>
-  );
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
       <Card className="lg:col-span-2">
         <CardHeader>
-            <CardTitle>Point of Sale</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>
+                {selectedCategory ? `Products in ${selectedCategory}` : 'Select a Category'}
+            </CardTitle>
+            {selectedCategory && (
+                <Button variant="outline" onClick={() => setSelectedCategory(null)}>
+                    <ArrowLeft className="mr-2 h-4 w-4" />
+                    Back to Categories
+                </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
-            <ProductGrid />
+            {selectedCategory ? renderProductGrid() : renderCategoryGrid()}
         </CardContent>
       </Card>
       
