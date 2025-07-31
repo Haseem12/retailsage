@@ -1,3 +1,4 @@
+
 import { NextRequest, NextResponse } from 'next/server';
 
 const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
@@ -19,8 +20,11 @@ export async function GET(request: NextRequest) {
         return NextResponse.json({ error: "No saleId provided" }, { status: 400 });
     }
     
-    // The saleId from the client is `sale_123`, we need just the `123`
-    const saleId = saleIdWithPrefix.replace('sale_', '');
+    // The saleId from the client can be `sale_123`, we need just the numeric part
+    const saleId = saleIdWithPrefix.replace(/[^0-9]/g, '');
+    if (!saleId) {
+        return NextResponse.json({ error: "Invalid saleId format" }, { status: 400 });
+    }
 
     try {
         // We need to fetch the sale details from our backend now

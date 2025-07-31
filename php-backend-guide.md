@@ -1,3 +1,4 @@
+
 # PHP Backend Guide for RetailLab
 
 This guide provides the necessary PHP code and database setup to create the authentication and business logic backend for your RetailLab application.
@@ -319,7 +320,7 @@ if ($method == 'POST') {
     if ($action == 'create') {
         $sql = "INSERT INTO products (user_id, name, price, stock, category, barcode, description, icon) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
         if($stmt = mysqli_prepare($link, $sql)){
-            mysqli_stmt_bind_param($stmt, "isdissis", $user_id, $data->name, $data->price, $data->stock, $data->category, $data->barcode, $data->description, $data->icon);
+            mysqli_stmt_bind_param($stmt, "isdissss", $user_id, $data->name, $data->price, $data->stock, $data->category, $data->barcode, $data->description, $data->icon);
             mysqli_stmt_execute($stmt);
             http_response_code(201);
             echo json_encode(["message" => "Product created", "id" => mysqli_insert_id($link)]);
@@ -436,7 +437,6 @@ if ($method == 'POST') {
         echo json_encode(["sales" => $sales]);
 
     } elseif ($action == 'read_single') {
-        // This endpoint might be public for the printer app, but secured in a real app.
         $id = $_GET['id'] ?? null;
         if (!$id) { http_response_code(400); echo json_encode(["message" => "No ID provided"]); exit(); }
 
@@ -458,8 +458,11 @@ if ($method == 'POST') {
                 mysqli_stmt_execute($stmt_items);
                 $result_items = mysqli_stmt_get_result($stmt_items);
                 $sale['items'] = mysqli_fetch_all($result_items, MYSQLI_ASSOC);
+                echo json_encode($sale);
+            } else {
+                http_response_code(404);
+                echo json_encode(["message" => "Sale not found"]);
             }
-            echo json_encode($sale);
         }
     }
 }
