@@ -417,24 +417,39 @@ if ($method == 'POST') {
         $user_id = get_user_id_from_token($link);
         if (!$user_id) { http_response_code(401); echo json_encode(["message" => "Unauthorized"]); exit(); }
 
-        $sql_sales = "SELECT id, total, date FROM sales WHERE user_id = ?";
-        $stmt_sales = mysqli_prepare($link, $sql_sales);
-        mysqli_stmt_bind_param($stmt_sales, "i", $user_id);
-        mysqli_stmt_execute($stmt_sales);
-        $result_sales = mysqli_stmt_get_result($stmt_sales);
-        $sales = mysqli_fetch_all($result_sales, MYSQLI_ASSOC);
+        $sql = "SELECT s.id, s.total, s.date, si.name, si.quantity, si.price 
+                FROM sales s
+                LEFT JOIN sale_items si ON s.id = si.sale_id
+                WHERE s.user_id = ?
+                ORDER BY s.date DESC, s.id DESC";
 
-        $sql_items = "SELECT sale_id, name, quantity, price FROM sale_items WHERE sale_id = ?";
-        $stmt_items = mysqli_prepare($link, $sql_items);
+        $stmt = mysqli_prepare($link, $sql);
+        mysqli_stmt_bind_param($stmt, "i", $user_id);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
 
-        foreach ($sales as $key => $sale) {
-            mysqli_stmt_bind_param($stmt_items, "i", $sale['id']);
-            mysqli_stmt_execute($stmt_items);
-            $result_items = mysqli_stmt_get_result($stmt_items);
-            $sales[$key]['items'] = mysqli_fetch_all($result_items, MYSQLI_ASSOC);
+        $sales_data = [];
+        while ($row = mysqli_fetch_assoc($result)) {
+            $sale_id = $row['id'];
+            if (!isset($sales_data[$sale_id])) {
+                $sales_data[$sale_id] = [
+                    'id' => $sale_id,
+                    'total' => $row['total'],
+                    'date' => $row['date'],
+                    'items' => []
+                ];
+            }
+            if ($row['name']) { // Ensure there is an item to add
+                $sales_data[$sale_id]['items'][] = [
+                    'name' => $row['name'],
+                    'quantity' => $row['quantity'],
+                    'price' => $row['price']
+                ];
+            }
         }
+        
+        echo json_encode(["sales" => array_values($sales_data)]);
 
-        echo json_encode(["sales" => $sales]);
 
     } elseif ($action == 'read_single') {
         $id = $_GET['id'] ?? null;
@@ -643,3 +658,5 @@ if ($method == 'GET') {
 }
 mysqli_close($link);
 ```
+
+    
