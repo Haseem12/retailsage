@@ -1,3 +1,5 @@
+
+'use client';
 import FuelNozzles from '@/components/fuel-nozzles';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis, Tooltip, Legend } from 'recharts';
