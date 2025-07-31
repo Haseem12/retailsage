@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
-  Minus, Plus, Trash2, PackageOpen, Calculator, Loader2, ArrowLeft
+  Minus, Plus, Trash2, PackageOpen, Calculator as CalculatorIcon, Loader2, ArrowLeft
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,6 +16,7 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Badge } from './ui/badge';
 import { cn } from '@/lib/utils';
 import { useToast } from '@/hooks/use-toast';
+import Calculator from './calculator';
 
 const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
 
@@ -259,7 +260,7 @@ export default function PosSystem() {
         </CardContent>
       </Card>
       
-      <div className="lg:col-span-1">
+      <div className="lg:col-span-1 space-y-8">
         <Card>
           <CardHeader>
             <CardTitle>Current Order</CardTitle>
@@ -304,6 +305,7 @@ export default function PosSystem() {
             </Button>
           </CardContent>
         </Card>
+        <Calculator />
       </div>
 
       {receiptData && <ReceiptModal 
