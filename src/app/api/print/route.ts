@@ -27,12 +27,6 @@ export async function GET(request: NextRequest) {
     }
 
     try {
-        // We need to fetch the sale details from our backend now
-        // NOTE: This assumes the PHP backend can be called from the Next.js backend.
-        // A token might be required if the endpoint is protected. For now, we assume public access or server-to-server auth.
-        // Also, this GET request won't have the user's session token, so the PHP API needs to allow this request.
-        // A better approach would be to pass the token from the mobile app if possible.
-        // Since we can't do that easily, we'll assume the PHP script is adjusted to allow this lookup by ID.
         const res = await fetch(`${API_BASE_URL}/api/sales.php?action=read_single&id=${saleId}`);
         
         if (!res.ok) {
@@ -40,11 +34,23 @@ export async function GET(request: NextRequest) {
             throw new Error(errorData.message || `Failed to fetch sale data, status: ${res.status}`);
         }
 
-        const sale = await res.json();
+        const saleData = await res.json();
         
-        if (!sale || !sale.items) {
+        if (!saleData || !saleData.items) {
              return NextResponse.json({ error: "Sale not found or is invalid" }, { status: 404 });
         }
+
+        // Ensure numeric types are correct
+        const sale = {
+            ...saleData,
+            total: parseFloat(saleData.total),
+            items: saleData.items.map((item: any) => ({
+                ...item,
+                quantity: parseInt(item.quantity, 10),
+                price: parseFloat(item.price)
+            }))
+        };
+
 
         const printPayload: PrintEntry[] = [];
 
