@@ -25,9 +25,8 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   
   useEffect(() => {
     if (isOpen) {
-      // Construct the URL to our API endpoint
-      const currentUrl = new URL(window.location.href);
-      const apiUrl = `${currentUrl.origin}/api/print?saleId=${saleId}`;
+      // Use the external, working PHP script for printing
+      const apiUrl = `https://www.arewaskills.com.ng/print/response.php?saleId=${saleId}`;
       
       // The final URL for the bluetooth print app
       const generatedUrl = `my.bluetoothprint.scheme://${apiUrl.replace(/^https?:\/\//, '')}`;
