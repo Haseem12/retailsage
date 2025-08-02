@@ -12,6 +12,7 @@ The frontend sends `POST` requests with a JSON body to the following endpoints:
 - **/api/spoilage.php**
 - **/api/data.php**
 - **/api/users.php**
+- **/print/response.php**
 
 
 You will need a web server (like Apache or Nginx) with PHP and a MySQL database.
@@ -33,6 +34,8 @@ Organize your backend files in a directory structure like this on your server:
 │   ├── spoilage.php
 │   ├── data.php
 │   └── users.php
+└── /print
+    └── response.php
 ```
 
 ## 2. Database Setup
@@ -659,4 +662,124 @@ if ($method == 'GET') {
 mysqli_close($link);
 ```
 
+## 6. Printer Response Script
+
+### `/print/response.php`
+
+This script is called by the Bluetooth printer app. It fetches sale data by its ID and returns a JSON payload formatted as a series of commands for the printer.
+
+```php
+<?php
+// /print/response.php
+require_once __DIR__ . '/../api/auth/config.php';
+
+// Function to create a standard print object
+function create_print_obj($content, $type = 0, $bold = 0, $align = 0, $format = 0) {
+    $obj = new stdClass();
+    $obj->type = $type;
+    $obj->content = $content;
+    $obj->bold = $bold;
+    $obj->align = $align;
+    $obj->format = $format;
+    return $obj;
+}
+
+// Function to create a barcode object
+function create_barcode_obj($value, $width = 150, $height = 60, $align = 1) {
+    $obj = new stdClass();
+    $obj->type = 2; // Barcode type
+    $obj->value = $value;
+    $obj->width = $width;
+    $obj->height = $height;
+    $obj->align = $align;
+    return $obj;
+}
+
+
+$sale_id_str = $_GET['saleId'] ?? null;
+if (!$sale_id_str) {
+    http_response_code(400);
+    echo json_encode(["message" => "No Sale ID provided"]);
+    exit();
+}
+
+// Extract numeric part from saleId (e.g., "sale_10" becomes "10")
+$sale_id = (int) preg_replace('/[^0-9]/', '', $sale_id_str);
+
+if ($sale_id <= 0) {
+    http_response_code(400);
+    echo json_encode(["message" => "Invalid Sale ID format"]);
+    exit();
+}
+
+// Fetch sale and business details
+$sql = "SELECT s.id, s.total, s.date, s.user_id, bd.business_name, bd.business_address, bd.rc_number, bd.phone_number 
+        FROM sales s
+        LEFT JOIN users u ON s.user_id = u.id
+        LEFT JOIN business_details bd ON u.id = bd.user_id
+        WHERE s.id = ?";
+        
+$stmt = mysqli_prepare($link, $sql);
+mysqli_stmt_bind_param($stmt, "i", $sale_id);
+mysqli_stmt_execute($stmt);
+$result = mysqli_stmt_get_result($stmt);
+$sale = mysqli_fetch_assoc($result);
+
+if (!$sale) {
+    http_response_code(404);
+    echo json_encode(["message" => "Sale not found"]);
+    exit();
+}
+
+// Fetch sale items
+$sql_items = "SELECT name, quantity, price FROM sale_items WHERE sale_id = ?";
+$stmt_items = mysqli_prepare($link, $sql_items);
+mysqli_stmt_bind_param($stmt_items, "i", $sale_id);
+mysqli_stmt_execute($stmt_items);
+$result_items = mysqli_stmt_get_result($stmt_items);
+$items = mysqli_fetch_all($result_items, MYSQLI_ASSOC);
+$sale['items'] = $items;
+
+// --- Build the JSON response for the printer ---
+$print_payload = array();
+
+// Header
+array_push($print_payload, create_print_obj($sale['business_name'] ?? 'RetailSage', 0, 1, 1, 2)); // Bold, Center, Double Height+Width
+array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1)); // Center
+if (!empty($sale['rc_number'])) {
+    array_push($print_payload, create_print_obj('RC: ' . $sale['rc_number'], 0, 0, 1));
+}
+if (!empty($sale['phone_number'])) {
+    array_push($print_payload, create_print_obj('Tel: ' . $sale['phone_number'], 0, 0, 1));
+}
+array_push($print_payload, create_print_obj(date("d/m/Y h:i A", strtotime($sale['date'])), 0, 0, 1));
+array_push($print_payload, create_print_obj(str_repeat('-', 32))); // Separator line
+
+// Sale Items
+foreach ($sale['items'] as $item) {
+    $item_line = sprintf("%dx %s - N%s", $item['quantity'], $item['name'], number_format($item['price'] * $item['quantity'], 2));
+    array_push($print_payload, create_print_obj($item_line));
+}
+
+// Footer
+array_push($print_payload, create_print_obj(str_repeat('-', 32))); // Separator line
+array_push($print_payload, create_print_obj("TOTAL: N" . number_format($sale['total'], 2), 0, 1, 2)); // Bold, Right align
+array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
+array_push($print_payload, create_print_obj('Thank you for your patronage!', 0, 1, 1));
+array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
+
+// Barcode
+array_push($print_payload, create_barcode_obj(strval($sale_id)));
+
+// Final output
+// Use JSON_FORCE_OBJECT if the app expects an object, otherwise use a simple array.
+// Based on your example, it seems to be a numerically indexed array, which is default for json_encode on this type of array.
+echo json_encode($print_payload); 
+
+mysqli_close($link);
+
+?>
+```
     
+
+```
