@@ -7,8 +7,7 @@ import { useEffect, useState, useRef } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
 import type { ReceiptItem } from '@/lib/types';
-import { toPng } from 'html-to-image';
-import { Loader2, Copy } from 'lucide-react';
+import { Loader2, Copy, Printer } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 
 interface ReceiptModalProps {
@@ -20,72 +19,30 @@ interface ReceiptModalProps {
 }
 
 export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId }: ReceiptModalProps) {
-  const receiptRef = useRef<HTMLDivElement>(null);
   const [businessDetails, setBusinessDetails] = useState({ name: 'RetailSage', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
-  const [showDetailsForm, setShowDetailsForm] = useState(false);
-  const [isGenerating, setIsGenerating] = useState(false);
   const [printUrl, setPrintUrl] = useState('');
   const { toast } = useToast();
   
-  const [rcInput, setRcInput] = useState('');
-  const [phoneInput, setPhoneInput] = useState('');
-
   useEffect(() => {
     if (isOpen) {
-      setPrintUrl(''); // Reset URL when modal opens
+      // Construct the URL to our API endpoint
+      const currentUrl = new URL(window.location.href);
+      const apiUrl = `${currentUrl.origin}/api/print?saleId=${saleId}`;
+      
+      // The final URL for the bluetooth print app
+      const generatedUrl = `my.bluetoothprint.scheme://${apiUrl.replace(/^https?:\/\//, '')}`;
+      setPrintUrl(generatedUrl);
+      
       const name = localStorage.getItem('businessName') || 'RetailSage';
       const address = localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA';
       const rcNumber = localStorage.getItem('rcNumber') || '';
       const phoneNumber = localStorage.getItem('phoneNumber') || '';
-
       setBusinessDetails({ name, address, rcNumber, phoneNumber });
-      setRcInput(rcNumber);
-      setPhoneInput(phoneNumber);
-
-      if (!rcNumber || !phoneNumber) {
-        setShowDetailsForm(true);
-      } else {
-        setShowDetailsForm(false);
-      }
     }
-  }, [isOpen]);
+  }, [isOpen, saleId]);
 
   const total = subtotal;
   const date = new Date();
-
-  const handleGenerateUrl = async () => {
-    if (!receiptRef.current) return;
-    setIsGenerating(true);
-    setPrintUrl('');
-
-    try {
-      const dataUrl = await toPng(receiptRef.current, { cacheBust: true });
-      const imageBlob = await fetch(dataUrl).then(res => res.blob());
-      
-      // We need a persistent URL, so we can't use `createObjectURL` as it's session-specific.
-      // A simple solution is to upload the image somewhere or use the long dataURI.
-      // Let's use the dataURI directly. The printing app must support it.
-      // This is a trade-off for not having a dedicated image upload service.
-      
-      const printPayload = [
-        {
-          type: 1, // image
-          path: dataUrl, // Use the base64 data URI
-          align: 1, // center
-        },
-      ];
-      
-      const generatedUrl = `my.bluetoothprint.scheme://${encodeURIComponent(JSON.stringify(printPayload))}`;
-      setPrintUrl(generatedUrl);
-      toast({ title: 'Print URL Generated', description: 'You can now copy the URL or launch the print app.' });
-
-    } catch (err) {
-      console.error('oops, something went wrong!', err);
-      toast({ variant: 'destructive', title: 'Error Generating Image', description: 'Could not create the receipt image.' });
-    } finally {
-        setIsGenerating(false);
-    }
-  };
 
   const handleCopy = () => {
     if (!printUrl) return;
@@ -104,40 +61,16 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
     a.click();
   }
 
-  const handleSaveDetails = () => {
-    localStorage.setItem('rcNumber', rcInput);
-    localStorage.setItem('phoneNumber', phoneInput);
-    setBusinessDetails(prev => ({ ...prev, rcNumber: rcInput, phoneNumber: phoneInput }));
-    setShowDetailsForm(false);
-  }
-
-  const renderDetailsForm = () => (
-    <>
-       <DialogHeader>
-        <DialogTitle>Complete Business Details</DialogTitle>
-        <DialogDescription>
-          Please provide your RC Number and Phone Number to include them on the receipt.
-        </DialogDescription>
-      </DialogHeader>
-      <div className="space-y-4 py-4">
-        <div className="space-y-2">
-          <Label htmlFor="rcNumber">RC Number</Label>
-          <Input id="rcNumber" value={rcInput} onChange={(e) => setRcInput(e.target.value)} placeholder="e.g. 123456" />
-        </div>
-        <div className="space-y-2">
-          <Label htmlFor="phoneNumber">Phone Number</Label>
-          <Input id="phoneNumber" value={phoneInput} onChange={(e) => setPhoneInput(e.target.value)} placeholder="e.g. 080-1234-5678" />
-        </div>
-      </div>
-      <DialogFooter>
-        <Button onClick={handleSaveDetails}>Save and Continue</Button>
-      </DialogFooter>
-    </>
-  );
-
   const renderReceiptContent = () => (
     <>
-      <div ref={receiptRef} className="print-content p-2 bg-white text-black" style={{ fontFamily: 'monospace', width: '300px' }}>
+      <DialogHeader>
+        <DialogTitle>Transaction Complete</DialogTitle>
+        <DialogDescription>
+          Print the receipt for the customer or close this dialog.
+        </DialogDescription>
+      </DialogHeader>
+
+      <div className="print-preview p-4 my-4 bg-white text-black rounded-md" style={{ fontFamily: 'monospace', width: '100%' }}>
         <header className="text-center items-center">
           <div className="flex justify-center">
             <RetailSageLogo className="w-8 h-8 my-2 text-black"/>
@@ -159,10 +92,6 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
           ))}
         </div>
         <div className="space-y-1 text-xs">
-          <div className="flex justify-between">
-            <span>Subtotal:</span>
-            <span>N{subtotal.toFixed(2)}</span>
-          </div>
           <div className="flex justify-between font-bold text-sm border-t border-dashed border-black pt-1 mt-1">
             <span>TOTAL:</span>
             <span>N{total.toFixed(2)}</span>
@@ -172,7 +101,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
       </div>
       
       {printUrl && (
-          <div className="space-y-2 mt-4">
+          <div className="space-y-2">
             <Label htmlFor="printUrl">Print URL</Label>
             <div className="flex gap-2">
                 <Input id="printUrl" readOnly value={printUrl} className="text-xs" />
@@ -183,16 +112,12 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
           </div>
       )}
 
-      <DialogFooter className="mt-4">
-        {printUrl ? (
-             <Button onClick={handleLaunchPrint} className="bg-accent text-accent-foreground hover:bg-accent/90">Launch Print</Button>
-        ) : (
-            <Button onClick={handleGenerateUrl} variant="outline" disabled={isGenerating}>
-               {isGenerating ? <Loader2 className="mr-2 animate-spin"/> : null}
-               Generate Print URL
-            </Button>
-        )}
-        <Button onClick={onClose}>Close</Button>
+      <DialogFooter className="mt-4 gap-2">
+        <Button onClick={handleLaunchPrint} className="bg-accent text-accent-foreground hover:bg-accent/90">
+            <Printer className="mr-2"/>
+            Launch Print App
+        </Button>
+        <Button onClick={onClose} variant="outline">Close</Button>
       </DialogFooter>
     </>
   );
@@ -200,7 +125,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md font-mono text-sm bg-card/90 backdrop-blur-sm">
-        {showDetailsForm ? renderDetailsForm() : renderReceiptContent()}
+        {renderReceiptContent()}
       </DialogContent>
     </Dialog>
   );

@@ -457,7 +457,7 @@ if ($method == 'POST') {
 
         $sql = "SELECT s.id, s.total, s.date, s.user_id, bd.business_name, bd.business_address, bd.rc_number, bd.phone_number 
                 FROM sales s
-                JOIN users u ON s.user_id = u.id
+                LEFT JOIN users u ON s.user_id = u.id
                 LEFT JOIN business_details bd ON u.id = bd.user_id
                 WHERE s.id = ?";
         if ($stmt = mysqli_prepare($link, $sql)) {
