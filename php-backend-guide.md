@@ -772,9 +772,7 @@ array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
 array_push($print_payload, create_barcode_obj(strval($sale_id)));
 
 // Final output
-// Use JSON_FORCE_OBJECT if the app expects an object, otherwise use a simple array.
-// Based on your example, it seems to be a numerically indexed array, which is default for json_encode on this type of array.
-echo json_encode($print_payload); 
+echo json_encode($print_payload, JSON_FORCE_OBJECT);
 
 mysqli_close($link);
 
@@ -782,4 +780,3 @@ mysqli_close($link);
 ```
     
 
-```
