@@ -25,11 +25,10 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   
   useEffect(() => {
     if (isOpen) {
-      // Use the external, working PHP script for printing
       const apiUrl = `https://www.arewaskills.com.ng/print/response.php?saleId=${saleId}`;
       
-      // The final URL for the bluetooth print app
-      const generatedUrl = `my.bluetoothprint.scheme://${apiUrl.replace(/^https?:\/\//, '')}`;
+      // Construct the final URL, keeping the https:// part
+      const generatedUrl = `my.bluetoothprint.scheme://${apiUrl}`;
       setPrintUrl(generatedUrl);
       
       const name = localStorage.getItem('businessName') || 'RetailSage';
