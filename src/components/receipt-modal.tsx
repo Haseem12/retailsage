@@ -53,11 +53,12 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   };
 
   const handleLaunchPrint = () => {
-    if (!printUrl) return;
-    // Directly setting window.location.href is a more reliable way to launch custom URL schemes
+ const apiUrl = `https://www.arewaskills.com.ng/print/response.php?saleId=${saleId}`;
+  const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
+
     window.location.href = printUrl;
   }
-
+  
   const renderReceiptContent = () => (
     <>
       <DialogHeader>
