@@ -54,9 +54,8 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
 
   const handleLaunchPrint = () => {
     if (!printUrl) return;
-    const a = document.createElement('a');
-    a.href = printUrl;
-    a.click();
+    // Directly setting window.location.href is a more reliable way to launch custom URL schemes
+    window.location.href = printUrl;
   }
 
   const renderReceiptContent = () => (
