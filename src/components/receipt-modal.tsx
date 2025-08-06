@@ -78,14 +78,14 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
                 <RetailSageLogo className="w-8 h-8 text-black"/>
             </div>
             <h2 className="text-lg font-bold">RetailSage POS</h2>
-            <p className="text-xs font-bold">{businessDetails.name}</p>
+            <p className="text-lg font-bold">{businessDetails.name}</p>
             <p className="text-xs">{businessDetails.address}</p>
             <div className="text-xs">
                 {businessDetails.rcNumber && <p>RC: {businessDetails.rcNumber}</p>}
                 {businessDetails.phoneNumber && <p>Tel: {businessDetails.phoneNumber}</p>}
             </div>
         </header>
-        <p className="border-t border-dashed border-black my-1">{Array(32).fill('=').join('')}</p>
+        <p className="border-t border-dashed border-black my-1">{Array(45).fill('').join('')}</p>
         <div className="text-xs space-y-1">
           <p>Date: {date.toLocaleDateString()} Time: {date.toLocaleTimeString()}</p>
           <p>Receipt #: {saleId.replace('sale_', '').padStart(8, '0')}</p>
@@ -93,7 +93,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
           <p>Technology: Sagheer+ Lab, Limited</p>
           <p>Consultant: {businessDetails.name}</p>
         </div>
-        <p className="border-t border-dashed border-black my-1">{Array(32).fill('=').join('')}</p>
+        <p className="border-t border-dashed border-black my-1">{Array(45).fill('').join('')}</p>
         <div className="border-b border-dashed border-black py-2 my-2 space-y-1 text-xs">
           {items.map((item, index) => (
             <div key={index} className="flex justify-between">
