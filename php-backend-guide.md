@@ -695,6 +695,15 @@ function create_barcode_obj($value, $width = 150, $height = 60, $align = 1) {
     return $obj;
 }
 
+// Function to create an image object
+function create_image_obj($path, $align = 1) {
+    $obj = new stdClass();
+    $obj->type = 1; // Image type
+    $obj->path = $path;
+    $obj->align = $align;
+    return $obj;
+}
+
 
 $sale_id_str = $_GET['saleId'] ?? null;
 if (!$sale_id_str) {
@@ -743,30 +752,38 @@ $sale['items'] = $items;
 // --- Build the JSON response for the printer ---
 $print_payload = array();
 
-// Header
-array_push($print_payload, create_print_obj('RetailSage POS', 0, 1, 1, 2));
-array_push($print_payload, create_print_obj('Stack: Sagheer+ Lab Technologies', 0, 0, 1));
-array_push($print_payload, create_print_obj('Receipt #: ' . str_pad($sale_id, 8, '0', STR_PAD_LEFT), 0, 0, 1));
-array_push($print_payload, create_print_obj('Consultant: ' . ($sale['business_name'] ?? 'N/A'), 0, 1, 1));
-array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1));
+$business_name = $sale['business_name'] ?? 'N/A';
+$sale_date = new DateTime($sale['date']);
 
+// Header
+array_push($print_payload, create_image_obj('https://sagheerplus.com.ng/retaillab/logo.png', 1));
+array_push($print_payload, create_print_obj('RetailSage POS', 0, 1, 1, 2));
+array_push($print_payload, create_print_obj($business_name, 0, 1, 1));
+array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1));
 if (!empty($sale['rc_number'])) {
     array_push($print_payload, create_print_obj('RC: ' . $sale['rc_number'], 0, 0, 1));
 }
 if (!empty($sale['phone_number'])) {
     array_push($print_payload, create_print_obj('Tel: ' . $sale['phone_number'], 0, 0, 1));
 }
-array_push($print_payload, create_print_obj(date("d/m/Y h:i A", strtotime($sale['date'])), 0, 0, 1));
-array_push($print_payload, create_print_obj(str_repeat('-', 32))); // Separator line
+array_push($print_payload, create_print_obj(str_repeat('=', 32)));
+
+// Info Section
+array_push($print_payload, create_print_obj('Date: ' . $sale_date->format("Y-m-d") . '   Time: ' . $sale_date->format("h:i A")));
+array_push($print_payload, create_print_obj('Receipt #: ' . str_pad($sale_id, 8, '0', STR_PAD_LEFT)));
+array_push($print_payload, create_print_obj('Stack: RetailSage POS'));
+array_push($print_payload, create_print_obj('Technology: Sagheer+ Lab, Limited'));
+array_push($print_payload, create_print_obj('Consultant: ' . $business_name));
+array_push($print_payload, create_print_obj(str_repeat('=', 32)));
 
 // Sale Items
 foreach ($sale['items'] as $item) {
     $item_line = sprintf("%dx %s - N%s", $item['quantity'], $item['name'], number_format($item['price'] * $item['quantity'], 2));
     array_push($print_payload, create_print_obj($item_line));
 }
+array_push($print_payload, create_print_obj(str_repeat('-', 32)));
 
 // Footer
-array_push($print_payload, create_print_obj(str_repeat('-', 32))); // Separator line
 array_push($print_payload, create_print_obj("TOTAL: N" . number_format($sale['total'], 2), 0, 1, 2)); // Bold, Right align
 array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
 array_push($print_payload, create_print_obj('Thank you for your patronage!', 0, 1, 1));
@@ -786,5 +803,3 @@ mysqli_close($link);
 ?>
 
     
-
-```
