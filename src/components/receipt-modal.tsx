@@ -25,9 +25,8 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   
   useEffect(() => {
     if (isOpen) {
-      const apiUrl = `https://www.sagheerplus.com.ng/retaillab/print/response.php?saleId=${saleId}`;
+      const apiUrl = `https://sagheerplus.com.ng/retaillab/print/response.php?saleId=${saleId}`;
       
-      // Construct the final URL, keeping the https:// part
       const generatedUrl = `my.bluetoothprint.scheme://${apiUrl}`;
       setPrintUrl(generatedUrl);
       
@@ -53,9 +52,13 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   };
 
   const handleLaunchPrint = () => {
+<<<<<<< HEAD
  const apiUrl = `https://www.arewaskills.com.ng/print/response.php?saleId=${saleId}`;
   const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
 
+=======
+    if (!printUrl) return;
+>>>>>>> 2f99ad8 (But the receipt isnt showing the new writeup. the response.php is okay j)
     window.location.href = printUrl;
   }
   
@@ -70,16 +73,19 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
 
       <div className="print-preview p-4 my-4 bg-white text-black rounded-md" style={{ fontFamily: 'monospace', width: '100%' }}>
         <header className="text-center items-center">
-          <div className="flex justify-center">
-            <RetailSageLogo className="w-8 h-8 my-2 text-black"/>
-          </div>
-          <h2 className="font-sans text-lg font-bold">{businessDetails.name}</h2>
-          <p className="text-xs">{businessDetails.address}</p>
-          <div className="text-xs">
-            {businessDetails.rcNumber && <p>RC: {businessDetails.rcNumber}</p>}
-            {businessDetails.phoneNumber && <p>Tel: {businessDetails.phoneNumber}</p>}
-            <p>{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
-          </div>
+            <h2 className="text-lg font-bold">RetailSage POS</h2>
+            <p className="text-xs">Stack: Sagheer+ Lab Technologies</p>
+            <p className="text-xs">Receipt #: {saleId.replace('sale_', '').padStart(8, '0')}</p>
+            <div className="flex justify-center my-2">
+                <RetailSageLogo className="w-8 h-8 text-black"/>
+            </div>
+            <h3 className="font-sans text-md font-bold">Consultant: {businessDetails.name}</h3>
+            <p className="text-xs">{businessDetails.address}</p>
+            <div className="text-xs">
+                {businessDetails.rcNumber && <p>RC: {businessDetails.rcNumber}</p>}
+                {businessDetails.phoneNumber && <p>Tel: {businessDetails.phoneNumber}</p>}
+                <p>{date.toLocaleDateString()} {date.toLocaleTimeString()}</p>
+            </div>
         </header>
         <div className="border-t border-b border-dashed border-black py-2 my-2 space-y-1 text-xs">
           {items.map((item, index) => (
@@ -95,7 +101,11 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
             <span>N{total.toFixed(2)}</span>
           </div>
         </div>
-        <p className="text-center text-xs mt-4">Thank you for your purchase!</p>
+        <footer className="text-center text-xs mt-4">
+            <p>Thank you for your patronage!</p>
+            <p className="font-bold">Powered by Sagheer+ Lab • v4.2</p>
+            <p>www.sagheerplus.com.ng</p>
+        </footer>
       </div>
       
       {printUrl && (
