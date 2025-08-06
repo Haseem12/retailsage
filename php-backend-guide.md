@@ -744,8 +744,12 @@ $sale['items'] = $items;
 $print_payload = array();
 
 // Header
-array_push($print_payload, create_print_obj($sale['business_name'] ?? 'RetailSage', 0, 1, 1, 2)); // Bold, Center, Double Height+Width
-array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1)); // Center
+array_push($print_payload, create_print_obj('RetailSage POS', 0, 1, 1, 2));
+array_push($print_payload, create_print_obj('Stack: Sagheer+ Lab Technologies', 0, 0, 1));
+array_push($print_payload, create_print_obj('Receipt #: ' . str_pad($sale_id, 8, '0', STR_PAD_LEFT), 0, 0, 1));
+array_push($print_payload, create_print_obj('Consultant: ' . ($sale['business_name'] ?? 'N/A'), 0, 1, 1));
+array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1));
+
 if (!empty($sale['rc_number'])) {
     array_push($print_payload, create_print_obj('RC: ' . $sale['rc_number'], 0, 0, 1));
 }
@@ -766,9 +770,12 @@ array_push($print_payload, create_print_obj(str_repeat('-', 32))); // Separator 
 array_push($print_payload, create_print_obj("TOTAL: N" . number_format($sale['total'], 2), 0, 1, 2)); // Bold, Right align
 array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
 array_push($print_payload, create_print_obj('Thank you for your patronage!', 0, 1, 1));
+array_push($print_payload, create_print_obj('Powered by Sagheer+ Lab • v4.2', 0, 0, 1));
+array_push($print_payload, create_print_obj('www.sagheerplus.com.ng', 0, 0, 1));
 array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
 
-// Barcode
+
+// Barcode for the sale ID
 array_push($print_payload, create_barcode_obj(strval($sale_id)));
 
 // Final output
@@ -777,6 +784,5 @@ echo json_encode($print_payload, JSON_FORCE_OBJECT);
 mysqli_close($link);
 
 ?>
-```
-    
 
+    
