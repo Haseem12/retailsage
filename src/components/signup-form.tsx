@@ -12,7 +12,7 @@ import RetailSageLogo from './retailsage-logo';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { cn } from '@/lib/utils';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function SignupForm() {
   const [email, setEmail] = useState('');

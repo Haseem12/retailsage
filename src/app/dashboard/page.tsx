@@ -9,7 +9,7 @@ import ActionButtons from '@/components/action-buttons';
 import type { Sale } from '@/lib/types';
 import { useToast } from '@/hooks/use-toast';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function DashboardPage() {
   const router = useRouter();

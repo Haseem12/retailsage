@@ -1,10 +1,11 @@
+
 'use client';
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 import { Download, Upload, Loader2 } from "lucide-react";
 import { useRef, useState } from "react";
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function DataManagement() {
     const { toast } = useToast();

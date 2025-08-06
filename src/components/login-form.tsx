@@ -11,7 +11,7 @@ import Link from 'next/link';
 import RetailSageLogo from './retailsage-logo';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function LoginForm() {
   const [email, setEmail] = useState('');

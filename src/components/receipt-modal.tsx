@@ -25,7 +25,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   
   useEffect(() => {
     if (isOpen) {
-      const apiUrl = `https://www.arewaskills.com.ng/print/response.php?saleId=${saleId}`;
+      const apiUrl = `https://www.sagheerplus.com.ng/retaillab/print/response.php?saleId=${saleId}`;
       
       // Construct the final URL, keeping the https:// part
       const generatedUrl = `my.bluetoothprint.scheme://${apiUrl}`;

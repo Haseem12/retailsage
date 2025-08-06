@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -10,7 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function EditProductForm({ productId }: { productId: string }) {
   const [product, setProduct] = useState<Product | null>(null);

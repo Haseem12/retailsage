@@ -1,3 +1,4 @@
+
 'use client';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Product, SpoilageEvent } from "@/lib/types";
@@ -10,7 +11,7 @@ import { useToast } from "@/hooks/use-toast";
 import { useState, useEffect } from "react";
 import { Trash2, Loader2 } from "lucide-react";
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function SpoilageTracker() {
     const [spoilage, setSpoilage] = useState<SpoilageEvent[]>([]);

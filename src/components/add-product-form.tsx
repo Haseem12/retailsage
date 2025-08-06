@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -10,7 +11,7 @@ import { suggestProductDetails } from '@/ai/flows/suggest-product-details';
 import { useToast } from '@/hooks/use-toast';
 import Barcode from 'react-barcode';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function AddProductForm() {
   const [name, setName] = useState('');

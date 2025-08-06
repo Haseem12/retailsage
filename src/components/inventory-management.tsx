@@ -18,7 +18,7 @@ import {
 import ProductLabelModal from './product-label-modal';
 import { useToast } from '@/hooks/use-toast';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function InventoryManagement() {
   const [products, setProducts] = useState<Product[]>([]);

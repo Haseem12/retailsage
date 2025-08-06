@@ -16,7 +16,7 @@ import {
 import { Badge } from './ui/badge';
 import { useToast } from '@/hooks/use-toast';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 interface User {
   id: number;

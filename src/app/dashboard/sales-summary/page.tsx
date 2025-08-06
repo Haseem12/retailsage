@@ -8,7 +8,7 @@ import SalesChart from '@/components/sales-chart';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
-const API_BASE_URL = 'https://arewaskills.com.ng/retaillab';
+const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 interface ProductSale {
   name: string;
