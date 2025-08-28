@@ -53,14 +53,12 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   };
 
   const handleLaunchPrint = () => {
-<<<<<<< HEAD
- const apiUrl = `https://www.arewaskills.com.ng/print/response.php?saleId=${saleId}`;
+
+ const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
   const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
 
-=======
     if (!printUrl) return;
->>>>>>> 2f99ad8 (But the receipt isnt showing the new writeup. the response.php is okay j)
-    window.location.href = printUrl;
+  window.location.href = printUrl;
   }
   
   const renderReceiptContent = () => (
