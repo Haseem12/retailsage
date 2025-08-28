@@ -52,13 +52,17 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
     });
   };
 
-const handleLaunchPrint = () => {
-  const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
-  const printUrl = `my.bluetoothprint.scheme://print?url=${encodeURIComponent(apiUrl)}`;
+  const handleLaunchPrint = () => {
 
-  if (!printUrl) return;
+ const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
+    const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
+
+
+
+    if (!printUrl) return;
   window.location.href = printUrl;
-}
+  }
+  
   const renderReceiptContent = () => (
     <>
       <DialogHeader>
