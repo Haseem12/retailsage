@@ -13,7 +13,11 @@ import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
-export default function LoginForm() {
+interface LoginFormProps {
+  redirectToPin?: boolean;
+}
+
+export default function LoginForm({ redirectToPin = false }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -60,7 +64,9 @@ export default function LoginForm() {
         localStorage.setItem('phoneNumber', data.phoneNumber);
       }
 
-      if (data.shopType === 'Fuel Station') {
+      if (redirectToPin) {
+        router.push('/pin');
+      } else if (data.shopType === 'Fuel Station') {
         router.push('/dashboard/fuel-management');
       } else {
         router.push('/dashboard');

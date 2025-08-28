@@ -53,10 +53,19 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   };
 
   const handleLaunchPrint = () => {
+<<<<<<< HEAD
  const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
   const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
     if (!printUrl) return;
     window.location.href = printUrl;
+=======
+
+ const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
+  const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
+
+    if (!printUrl) return;
+  window.location.href = printUrl;
+>>>>>>> 21f460c (remove optimized for mobile page. and unboarding should not be part of a)
   }
   
   const renderReceiptContent = () => (

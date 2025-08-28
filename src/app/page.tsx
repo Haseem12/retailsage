@@ -1,6 +1,7 @@
 
 'use client';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import {
   Carousel,
   CarouselContent,
@@ -11,7 +12,7 @@ import { Button } from '@/components/ui/button';
 import RetailSageLogo from '@/components/retailsage-logo';
 import { useEffect, useState } from 'react';
 import { cn } from '@/lib/utils';
-import { Warehouse, BrainCircuit, Smartphone } from 'lucide-react';
+import { Warehouse, BrainCircuit, Smartphone, Loader2 } from 'lucide-react';
 
 const onboardingSteps = [
   {
@@ -39,6 +40,17 @@ const onboardingSteps = [
 export default function OnboardingPage() {
   const [api, setApi] = useState<CarouselApi>();
   const [current, setCurrent] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+
+  useEffect(() => {
+    const token = sessionStorage.getItem('user-token');
+    if (token) {
+      router.replace('/pin');
+    } else {
+      setLoading(false);
+    }
+  }, [router]);
 
   useEffect(() => {
     if (!api) {
@@ -57,6 +69,14 @@ export default function OnboardingPage() {
       api.off('select', onSelect);
     };
   }, [api]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen bg-background">
+        <Loader2 className="h-8 w-8 animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="relative flex min-h-screen flex-col items-center justify-center bg-background">
