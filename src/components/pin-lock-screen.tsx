@@ -9,18 +9,27 @@ import { AlertCircle } from 'lucide-react';
 import SajFoodsLogo from './sajfoods-logo';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Input } from './ui/input';
-
-const CORRECT_PIN = "1234"; // Hardcoded for now
+import Link from 'next/link';
 
 export default function PinLockScreen() {
   const [pin, setPin] = useState('');
-  const [message, setMessage] = useState<{ type: 'error'; text: string } | null>(null);
+  const [storedPin, setStoredPin] = useState<string | null>(null);
+  const [hasPin, setHasPin] = useState(false);
+  const [message, setMessage] = useState<{ type: 'error' | 'info'; text: string } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
     const token = sessionStorage.getItem('user-token');
     if (!token) {
       router.replace('/login');
+      return;
+    }
+
+    const userPin = localStorage.getItem('user-pin');
+    setStoredPin(userPin);
+    setHasPin(!!userPin);
+    if (!userPin) {
+      setMessage({ type: 'info', text: 'Please set up a PIN for this device.' });
     }
   }, [router]);
 
@@ -28,14 +37,14 @@ export default function PinLockScreen() {
     const value = e.target.value;
     if (/^\d{0,4}$/.test(value)) {
       setPin(value);
-      if (value.length === 4) {
+      if (value.length === 4 && hasPin) {
         verifyPin(value);
       }
     }
   };
 
   const verifyPin = (currentPin: string) => {
-    if (currentPin === CORRECT_PIN) {
+    if (currentPin === storedPin) {
         const shopType = localStorage.getItem('shopType');
         if (shopType === 'Fuel Station') {
             router.push('/dashboard/fuel-management');
@@ -46,16 +55,42 @@ export default function PinLockScreen() {
       setMessage({ type: 'error', text: 'Incorrect PIN. Please try again.' });
       setTimeout(() => {
         setPin('');
-        setMessage(null);
+        setMessage(hasPin ? null : { type: 'info', text: 'Please set up a PIN for this device.' });
       }, 1000);
     }
   };
   
   const handleLogout = () => {
     sessionStorage.removeItem('user-token');
-    localStorage.clear();
+    // Keep PIN for next login
     router.push('/login');
   };
+
+  if (!hasPin) {
+    return (
+      <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50 text-center">
+        <CardHeader>
+          <div className="flex justify-center items-center gap-2 mb-4">
+            <SajFoodsLogo className="w-10 h-10" />
+          </div>
+          <CardTitle>Create a PIN</CardTitle>
+          <CardDescription>To secure your app, please create a 4-digit PIN for this device.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex flex-col gap-4">
+          <Alert variant="default">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Setup Required</AlertTitle>
+            <AlertDescription>
+              No PIN is set for this device. Please go to settings to create one. You will be redirected there after logging in.
+            </AlertDescription>
+          </Alert>
+          <Button asChild>
+            <Link href="/dashboard/settings">Go to Settings</Link>
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
     <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50 text-center">
@@ -68,9 +103,9 @@ export default function PinLockScreen() {
       </CardHeader>
       <CardContent className="flex flex-col gap-4">
          {message && (
-          <Alert variant="destructive" className="animate-in fade-in">
+          <Alert variant={message.type === 'error' ? 'destructive' : 'default'} className="animate-in fade-in">
             <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
+            <AlertTitle>{message.type === 'error' ? 'Error' : 'Info'}</AlertTitle>
             <AlertDescription>
               {message.text}
             </AlertDescription>
