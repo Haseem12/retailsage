@@ -16,6 +16,15 @@ interface ProductSale {
   revenue: number;
 }
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function SalesSummaryPage() {
   const [totalRevenue, setTotalRevenue] = useState(0);
   const [totalSales, setTotalSales] = useState(0);
@@ -32,8 +41,12 @@ export default function SalesSummaryPage() {
         const response = await fetch(`${API_BASE_URL}/api/sales.php?action=read`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to fetch sales summary');
+        if (!response.ok) {
+            const errorData = await safeJsonParse(response);
+            throw new Error(errorData.message || 'Failed to fetch sales summary');
+        }
+
+        const data = await safeJsonParse(response);
         
         const sales: Sale[] = (data.sales || []).map((sale: any) => ({
           ...sale,

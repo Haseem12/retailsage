@@ -20,6 +20,15 @@ import { useToast } from '@/hooks/use-toast';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function InventoryManagement() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -40,8 +49,13 @@ export default function InventoryManagement() {
           'Authorization': `Bearer ${token}`
         }
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+      if (!response.ok) {
+        const errorData = await safeJsonParse(response);
+        throw new Error(errorData.message || 'Failed to fetch products');
+      }
+      
+      const data = await safeJsonParse(response);
+      
       if (data.products) {
         // Ensure price and stock are numbers
         const typedProducts = data.products.map((p: any) => ({
@@ -79,7 +93,7 @@ export default function InventoryManagement() {
           headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
           body: JSON.stringify({ action: 'delete', id })
         });
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         if (!response.ok) throw new Error(data.message || 'Failed to delete product');
 
         toast({ title: "Product Deleted", description: "The product has been removed."});

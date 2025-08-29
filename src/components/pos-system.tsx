@@ -20,6 +20,15 @@ import Calculator from './calculator';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 const iconMap: { [key: string]: React.ElementType } = {
   Apple, Milk, Sandwich, Drumstick, Shirt, PersonStanding, Laptop, Headphones, Fuel, Coffee, Croissant,
 };
@@ -45,8 +54,12 @@ export default function PosSystem() {
       const response = await fetch(`${API_BASE_URL}/api/products.php?action=read`, {
         headers: { 'Authorization': `Bearer ${token}` }
       });
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+      if (!response.ok) {
+        const errorData = await safeJsonParse(response);
+        throw new Error(errorData.message || 'Failed to fetch products');
+      }
+      
+      const data = await safeJsonParse(response);
       
       const availableProducts = (data.products || []).map((p: any) => ({
         ...p,
@@ -132,7 +145,7 @@ export default function PosSystem() {
         })
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
       if (!response.ok) throw new Error(data.message || 'Failed to process payment');
 
       const saleId = `sale_${data.sale_id}`; // Use the ID from the backend

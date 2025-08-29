@@ -28,6 +28,15 @@ interface User {
   plan: 'Premium' | 'Freemium';
 }
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
@@ -41,7 +50,7 @@ export default function UserManagement() {
         const response = await fetch(`${API_BASE_URL}/api/users.php?action=read_all`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
+        const data = await safeJsonParse(response);
         if (!response.ok) throw new Error(data.message || 'Failed to fetch users');
         
         // Add static status/role for demonstration as backend doesn't provide it

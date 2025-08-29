@@ -14,6 +14,15 @@ import { cn } from '@/lib/utils';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function SignupForm() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -42,7 +51,7 @@ export default function SignupForm() {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
 
       if (!response.ok) {
         throw new Error(data.message || 'Signup failed.');

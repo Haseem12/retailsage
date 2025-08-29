@@ -15,6 +15,15 @@ import { cn } from '@/lib/utils';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 const shopTypes = [
   "Fuel Station",
   "Restaurant",
@@ -63,7 +72,7 @@ export default function WelcomeForm() {
         body: JSON.stringify({ userId, businessName, businessAddress, shopType, rcNumber, phoneNumber }),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
 
       if (!response.ok) {
         throw new Error(data.message || 'Failed to save details.');

@@ -17,6 +17,15 @@ interface LoginFormProps {
   redirectToPin?: boolean;
 }
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function LoginForm({ redirectToPin = false }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -37,7 +46,7 @@ export default function LoginForm({ redirectToPin = false }: LoginFormProps) {
         body: JSON.stringify({ email, password }),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
 
       if (!response.ok) {
         throw new Error(data.message || 'Login failed.');

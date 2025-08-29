@@ -13,6 +13,15 @@ import { Skeleton } from './ui/skeleton';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function EditProductForm({ productId }: { productId: string }) {
   const [product, setProduct] = useState<Product | null>(null);
   const [name, setName] = useState('');
@@ -32,13 +41,16 @@ export default function EditProductForm({ productId }: { productId: string }) {
       setIsFetching(true);
       try {
         const token = sessionStorage.getItem('user-token');
-        // We assume the products.php can handle a GET with an ID, but it doesn't.
-        // So we fetch all and filter. This is inefficient but works with the current backend.
         const response = await fetch(`${API_BASE_URL}/api/products.php`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to fetch products');
+
+        if (!response.ok) {
+            const errorData = await safeJsonParse(response);
+            throw new Error(errorData.message || 'Failed to fetch products');
+        }
+
+        const data = await safeJsonParse(response);
 
         const products = (data.products || []).map((p: any) => ({
           ...p,
@@ -99,7 +111,7 @@ export default function EditProductForm({ productId }: { productId: string }) {
         }),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
       if (!response.ok) {
         throw new Error(data.message || 'Failed to update product');
       }

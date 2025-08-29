@@ -7,6 +7,15 @@ import { useRef, useState } from "react";
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function DataManagement() {
     const { toast } = useToast();
     const fileInputRef = useRef<HTMLInputElement>(null);
@@ -22,7 +31,7 @@ export default function DataManagement() {
             });
             
             if (!response.ok) {
-                const errorData = await response.json();
+                const errorData = await safeJsonParse(response);
                 throw new Error(errorData.message || "Failed to download backup");
             }
             
@@ -76,7 +85,7 @@ export default function DataManagement() {
                         body: JSON.stringify(data)
                     });
 
-                    const result = await response.json();
+                    const result = await safeJsonParse(response);
                     if (!response.ok) {
                         throw new Error(result.message || "Failed to restore data");
                     }

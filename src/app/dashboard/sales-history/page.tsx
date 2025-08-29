@@ -9,6 +9,15 @@ import { Loader2 } from 'lucide-react';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function SalesHistoryPage() {
   const [sales, setSales] = useState<Sale[]>([]);
   const [loading, setLoading] = useState(true);
@@ -22,8 +31,13 @@ export default function SalesHistoryPage() {
         const response = await fetch(`${API_BASE_URL}/api/sales.php?action=read`, {
           headers: { 'Authorization': `Bearer ${token}` }
         });
-        const data = await response.json();
-        if (!response.ok) throw new Error(data.message || 'Failed to fetch sales');
+
+        if (!response.ok) {
+            const errorData = await safeJsonParse(response);
+            throw new Error(errorData.message || 'Failed to fetch sales');
+        }
+        
+        const data = await safeJsonParse(response);
         
         const typedSales = (data.sales || []).map((sale: any) => ({
           ...sale,

@@ -13,6 +13,15 @@ import Barcode from 'react-barcode';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function AddProductForm() {
   const [name, setName] = useState('');
   const [price, setPrice] = useState('');
@@ -99,7 +108,7 @@ export default function AddProductForm() {
         }),
       });
 
-      const data = await response.json();
+      const data = await safeJsonParse(response);
       if (!response.ok) {
         throw new Error(data.message || 'Failed to add product');
       }

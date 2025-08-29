@@ -13,6 +13,15 @@ import { Trash2, Loader2 } from "lucide-react";
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
+async function safeJsonParse(response: Response) {
+    try {
+        return await response.json();
+    } catch (error) {
+        const text = await response.text();
+        throw new Error(`Failed to parse JSON. Server responded with: ${text}`);
+    }
+}
+
 export default function SpoilageTracker() {
     const [spoilage, setSpoilage] = useState<SpoilageEvent[]>([]);
     const [products, setProducts] = useState<Product[]>([]);
@@ -32,8 +41,8 @@ export default function SpoilageTracker() {
                 fetch(`${API_BASE_URL}/api/products.php?action=read`, { headers: { 'Authorization': `Bearer ${token}` } })
             ]);
 
-            const spoilageData = await spoilageRes.json();
-            const productsData = await productsRes.json();
+            const spoilageData = await safeJsonParse(spoilageRes);
+            const productsData = await safeJsonParse(productsRes);
 
             if (!spoilageRes.ok) throw new Error(spoilageData.message || 'Failed to fetch spoilage data');
             if (!productsRes.ok) throw new Error(productsData.message || 'Failed to fetch products');
@@ -74,7 +83,7 @@ export default function SpoilageTracker() {
                 })
             });
 
-            const data = await response.json();
+            const data = await safeJsonParse(response);
             if (!response.ok) throw new Error(data.message || 'Failed to log spoilage');
             
             toast({
@@ -103,7 +112,7 @@ export default function SpoilageTracker() {
                     body: JSON.stringify({ action: 'delete', id })
                 });
 
-                const data = await response.json();
+                const data = await safeJsonParse(response);
                 if (!response.ok) throw new Error(data.message || 'Failed to delete record');
 
                 toast({
