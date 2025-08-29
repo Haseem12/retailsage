@@ -27,10 +27,6 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   
   useEffect(() => {
     if (isOpen) {
-      const apiUrl = `${API_BASE_URL}/print/response.php?saleId=${saleId}`;
-      const generatedUrl = `my.bluetoothprint.scheme://${apiUrl}`;
-      setPrintUrl(generatedUrl);
-      
       const name = localStorage.getItem('businessName') || 'SAJ FOODS';
       const address = localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA';
       const rcNumber = localStorage.getItem('rcNumber') || '';
@@ -43,8 +39,10 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   const date = new Date();
 
   const handleCopy = () => {
-    if (!printUrl) return;
-    navigator.clipboard.writeText(printUrl).then(() => {
+    const apiUrl = `${API_BASE_URL}/print/response.php?saleId=${saleId}`;
+    const generatedUrl = `my.bluetoothprint.scheme://${apiUrl}`;
+    if (!generatedUrl) return;
+    navigator.clipboard.writeText(generatedUrl).then(() => {
         toast({ title: 'URL Copied!', description: 'The print URL has been copied to your clipboard.'});
     }, (err) => {
         toast({ variant: 'destructive', title: 'Copy Failed', description: 'Could not copy the URL.'});
@@ -53,7 +51,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   };
 
   const handleLaunchPrint = () => {
-    const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
+    const apiUrl = `${API_BASE_URL}/print/response.php?saleId=${saleId}`;
     const constructedPrintUrl = `my.bluetoothprint.scheme://${apiUrl}`;
     if (!constructedPrintUrl) return;
     window.location.href = constructedPrintUrl;
@@ -109,18 +107,6 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
         </footer>
       </div>
       
-      {printUrl && (
-          <div className="space-y-2">
-            <Label htmlFor="printUrl">Print URL</Label>
-            <div className="flex gap-2">
-                <Input id="printUrl" readOnly value={printUrl} className="text-xs" />
-                <Button variant="outline" size="icon" onClick={handleCopy}>
-                    <Copy className="h-4 w-4" />
-                </Button>
-            </div>
-          </div>
-      )}
-
       <DialogFooter className="mt-4 gap-2">
         <Button onClick={handleLaunchPrint} className="bg-accent text-accent-foreground hover:bg-accent/90">
             <Printer className="mr-2"/>
