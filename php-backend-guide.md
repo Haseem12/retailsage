@@ -756,7 +756,7 @@ $business_name = $sale['business_name'] ?? 'N/A';
 $sale_date = new DateTime($sale['date']);
 
 // Header
-array_push($print_payload, create_image_obj('https://sagheerplus.com.ng/retaillab/logo.png', 1));
+array_push($print_payload, create_image_obj('https://sagheerplus.com.ng/retaillab/logo.png', 1)); // Centered Logo
 array_push($print_payload, create_print_obj($business_name, 0, 1, 1, 2));
 array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1));
 if (!empty($sale['rc_number'])) {
@@ -802,3 +802,4 @@ mysqli_close($link);
 ?>
 
     
+
