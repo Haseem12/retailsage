@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { AlertCircle } from 'lucide-react';
-import RetailSageLogo from './retailsage-logo';
+import SajFoodsLogo from './sajfoods-logo';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 import { Input } from './ui/input';
 
@@ -61,7 +61,7 @@ export default function PinLockScreen() {
     <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50 text-center">
       <CardHeader>
         <div className="flex justify-center items-center gap-2 mb-4">
-            <RetailSageLogo className="w-10 h-10" />
+            <SajFoodsLogo className="w-10 h-10" />
         </div>
         <CardTitle>Enter PIN</CardTitle>
         <CardDescription>Enter your 4-digit PIN to unlock.</CardDescription>

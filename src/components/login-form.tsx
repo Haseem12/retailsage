@@ -8,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Loader2, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
-import RetailSageLogo from './retailsage-logo';
+import SajFoodsLogo from './sajfoods-logo';
 import { Alert, AlertDescription, AlertTitle } from './ui/alert';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
@@ -83,8 +83,8 @@ export default function LoginForm({ redirectToPin = false }: LoginFormProps) {
     <Card className="w-full max-w-sm shadow-2xl z-10 bg-card/80 backdrop-blur-sm border-border/50">
       <CardHeader className="text-center">
         <div className="flex justify-center items-center gap-2 mb-4">
-            <RetailSageLogo className="w-10 h-10" />
-            <h1 className="text-4xl font-bold font-headline">RetailSage</h1>
+            <SajFoodsLogo className="w-10 h-10" />
+            <h1 className="text-4xl font-bold font-headline">SAJ FOODS</h1>
         </div>
         <CardDescription>Enter your credentials to access your dashboard.</CardDescription>
       </CardHeader>

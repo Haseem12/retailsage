@@ -2,7 +2,7 @@
 'use client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import RetailSageLogo from './retailsage-logo';
+import SajFoodsLogo from './sajfoods-logo';
 import { useEffect, useState, useRef } from 'react';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -21,7 +21,7 @@ interface ReceiptModalProps {
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
 export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId }: ReceiptModalProps) {
-  const [businessDetails, setBusinessDetails] = useState({ name: 'RetailSage', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
+  const [businessDetails, setBusinessDetails] = useState({ name: 'SAJ FOODS', address: '123 Market St, Anytown, USA', rcNumber: '', phoneNumber: '' });
   const [printUrl, setPrintUrl] = useState('');
   const { toast } = useToast();
   
@@ -31,7 +31,7 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
       const generatedUrl = `my.bluetoothprint.scheme://${apiUrl}`;
       setPrintUrl(generatedUrl);
       
-      const name = localStorage.getItem('businessName') || 'RetailSage';
+      const name = localStorage.getItem('businessName') || 'SAJ FOODS';
       const address = localStorage.getItem('businessAddress') || '123 Market St, Anytown, USA';
       const rcNumber = localStorage.getItem('rcNumber') || '';
       const phoneNumber = localStorage.getItem('phoneNumber') || '';
@@ -53,30 +53,10 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
   };
 
   const handleLaunchPrint = () => {
-<<<<<<< HEAD
-
-=======
-<<<<<<< HEAD
->>>>>>> 3bd8d46 (My new change)
- const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
-    const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
-
-
-
-    if (!printUrl) return;
-<<<<<<< HEAD
-  window.location.href = printUrl;
-=======
-    window.location.href = printUrl;
-=======
-
- const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
-  const printUrl = `my.bluetoothprint.scheme://${apiUrl}`;
-
-    if (!printUrl) return;
-  window.location.href = printUrl;
->>>>>>> 21f460c (remove optimized for mobile page. and unboarding should not be part of a)
->>>>>>> 3bd8d46 (My new change)
+    const apiUrl = `https://www.sagheerplus.com.ng/print/response.php?saleId=${saleId}`;
+    const constructedPrintUrl = `my.bluetoothprint.scheme://${apiUrl}`;
+    if (!constructedPrintUrl) return;
+    window.location.href = constructedPrintUrl;
   }
   
   const renderReceiptContent = () => (
@@ -91,25 +71,23 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
       <div className="print-preview p-4 my-4 bg-white text-black rounded-md" style={{ fontFamily: 'monospace', width: '100%' }}>
         <header className="text-center items-center">
             <div className="flex justify-center my-2">
-                <RetailSageLogo className="w-8 h-8 text-black"/>
+                <SajFoodsLogo className="w-8 h-8 text-black"/>
             </div>
-            <h2 className="text-lg font-bold">RetailSage POS</h2>
-            <p className="text-lg font-bold">{businessDetails.name}</p>
+            <h2 className="text-lg font-bold">{businessDetails.name}</h2>
             <p className="text-xs">{businessDetails.address}</p>
             <div className="text-xs">
                 {businessDetails.rcNumber && <p>RC: {businessDetails.rcNumber}</p>}
                 {businessDetails.phoneNumber && <p>Tel: {businessDetails.phoneNumber}</p>}
             </div>
         </header>
-        <p className="border-t border-dashed border-black my-1">{Array(45).fill('').join('')}</p>
+        <p className="border-t border-dashed border-black my-1">{Array(45).fill('=').join('')}</p>
         <div className="text-xs space-y-1">
           <p>Date: {date.toLocaleDateString()} Time: {date.toLocaleTimeString()}</p>
           <p>Receipt #: {saleId.replace('sale_', '').padStart(8, '0')}</p>
-          <p>Stack: RetailSage POS</p>
           <p>Technology: Sagheer+ Lab, Limited</p>
           <p>Consultant: {businessDetails.name}</p>
         </div>
-        <p className="border-t border-dashed border-black my-1">{Array(45).fill('').join('')}</p>
+        <p className="border-t border-dashed border-black my-1">{Array(45).fill('=').join('')}</p>
         <div className="border-b border-dashed border-black py-2 my-2 space-y-1 text-xs">
           {items.map((item, index) => (
             <div key={index} className="flex justify-between">
@@ -161,5 +139,3 @@ export default function ReceiptModal({ isOpen, onClose, items, subtotal, saleId 
     </Dialog>
   );
 }
-
-    

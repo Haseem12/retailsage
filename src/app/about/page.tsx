@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import RetailSageLogo from '@/components/retailsage-logo';
+import SajFoodsLogo from '@/components/sajfoods-logo';
 import { Zap, Users, Target, ArrowLeft } from 'lucide-react';
 
 export default function AboutPage() {
@@ -23,7 +23,7 @@ export default function AboutPage() {
 
       <div className="z-10 w-full max-w-4xl space-y-8 py-16 text-center">
         <header className="flex flex-col items-center gap-2 text-white">
-            <RetailSageLogo className="w-14 h-14 text-primary" />
+            <SajFoodsLogo className="w-14 h-14 text-primary" />
             <h1 className="text-4xl font-bold font-headline">Sagheer+ Lab</h1>
             <p className="text-lg text-white/80">
               Building smart, inclusive, and tech-driven solutions for Africa.
@@ -76,7 +76,7 @@ export default function AboutPage() {
                     <CardTitle>Our Impact</CardTitle>
                 </CardHeader>
                 <CardContent className="text-muted-foreground">
-                    <p>At Sagheer+ Lab, we design inclusive, tech-powered solutions that help communities grow smarter — from retail to agriculture. RetailSage is part of our broader mission to make modern retail accessible, efficient, and connected.</p>
+                    <p>At Sagheer+ Lab, we design inclusive, tech-powered solutions that help communities grow smarter — from retail to agriculture. SAJ FOODS is part of our broader mission to make modern retail accessible, efficient, and connected.</p>
                 </CardContent>
             </Card>
         </main>

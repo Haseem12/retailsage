@@ -6,7 +6,7 @@ import AppContent from '@/components/app-content';
 
 // This metadata is still useful for SEO and mobile browser tabs.
 export const metadata: Metadata = {
-  title: 'RetailSage',
+  title: 'SAJ FOODS',
   description: 'AI-powered retail insights and management.',
 };
 

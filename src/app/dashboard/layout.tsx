@@ -20,7 +20,7 @@ import { LayoutDashboard, Shield, Flame, LogOut, ShoppingCart, BookOpen, BarChar
 import { Button } from '@/components/ui/button';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useEffect, useState } from 'react';
-import RetailSageLogo from '@/components/retailsage-logo';
+import SajFoodsLogo from '@/components/sajfoods-logo';
 import { Loader2 } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { cn } from '@/lib/utils';
@@ -122,8 +122,8 @@ export default function DashboardLayout({
         <SidebarContent>
           <SidebarHeader>
             <div className="flex items-center gap-2">
-              <RetailSageLogo className="size-7" />
-              <span className="text-xl font-semibold font-headline">RetailSage</span>
+              <SajFoodsLogo className="size-7" />
+              <span className="text-xl font-semibold font-headline">SAJ FOODS</span>
             </div>
           </SidebarHeader>
           <SidebarMenu>
@@ -166,15 +166,15 @@ export default function DashboardLayout({
         </SidebarContent>
         <SidebarFooter>
           <p className="text-xs text-muted-foreground p-2 group-data-[collapsible=icon]:hidden">
-            © {new Date().getFullYear()} RetailSage Inc.
+            © {new Date().getFullYear()} SAJ FOODS Inc.
           </p>
         </SidebarFooter>
       </Sidebar>
       <SidebarInset className="flex flex-col">
         <header className="sticky top-0 z-50 flex items-center justify-between p-2 border-b h-14 bg-card/80 backdrop-blur-sm">
             <div className="flex items-center gap-2">
-                <RetailSageLogo className="size-7" />
-                <span className="text-lg font-semibold font-headline">RetailSage</span>
+                <SajFoodsLogo className="size-7" />
+                <span className="text-lg font-semibold font-headline">SAJ FOODS</span>
             </div>
             
             <div className="flex items-center gap-2">

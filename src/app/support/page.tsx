@@ -2,7 +2,7 @@
 import Link from 'next/link';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import RetailSageLogo from '@/components/retailsage-logo';
+import SajFoodsLogo from '@/components/sajfoods-logo';
 import { ArrowLeft, BookOpen, UserPlus, Receipt } from 'lucide-react';
 
 export default function SupportPage() {
@@ -24,8 +24,8 @@ export default function SupportPage() {
       <Card className="w-full max-w-2xl z-10 bg-card/80 backdrop-blur-sm text-center">
         <CardHeader>
            <div className="flex justify-center items-center gap-2 mb-2">
-            <RetailSageLogo className="w-10 h-10 text-primary" />
-            <h1 className="text-4xl font-bold font-headline">RetailSage</h1>
+            <SajFoodsLogo className="w-10 h-10 text-primary" />
+            <h1 className="text-4xl font-bold font-headline">SAJ FOODS</h1>
           </div>
           <CardDescription>
             A project by <Link href="/about" className="underline hover:text-primary">Sagheer+ Lab</Link>, created to support local retail businesses with digital tools that improve inventory, operations, and customer experience.
