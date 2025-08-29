@@ -757,8 +757,7 @@ $sale_date = new DateTime($sale['date']);
 
 // Header
 array_push($print_payload, create_image_obj('https://sagheerplus.com.ng/retaillab/logo.png', 1));
-array_push($print_payload, create_print_obj('RetailSage POS', 0, 1, 1, 2));
-array_push($print_payload, create_print_obj($business_name, 0, 1, 1));
+array_push($print_payload, create_print_obj($business_name, 0, 1, 1, 2));
 array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1));
 if (!empty($sale['rc_number'])) {
     array_push($print_payload, create_print_obj('RC: ' . $sale['rc_number'], 0, 0, 1));
@@ -766,15 +765,15 @@ if (!empty($sale['rc_number'])) {
 if (!empty($sale['phone_number'])) {
     array_push($print_payload, create_print_obj('Tel: ' . $sale['phone_number'], 0, 0, 1));
 }
-array_push($print_payload, create_print_obj(str_repeat('=', 32)));
+array_push($print_payload, create_print_obj(str_repeat('=', 45)));
 
 // Info Section
 array_push($print_payload, create_print_obj('Date: ' . $sale_date->format("Y-m-d") . '   Time: ' . $sale_date->format("h:i A")));
 array_push($print_payload, create_print_obj('Receipt #: ' . str_pad($sale_id, 8, '0', STR_PAD_LEFT)));
-array_push($print_payload, create_print_obj('Stack: RetailSage POS'));
 array_push($print_payload, create_print_obj('Technology: Sagheer+ Lab, Limited'));
 array_push($print_payload, create_print_obj('Consultant: ' . $business_name));
-array_push($print_payload, create_print_obj(str_repeat('=', 32)));
+array_push($print_payload, create_print_obj(str_repeat('=', 45)));
+
 
 // Sale Items
 foreach ($sale['items'] as $item) {
