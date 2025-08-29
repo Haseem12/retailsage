@@ -22,7 +22,7 @@ export default function SettingsPage() {
           <CardTitle>Data Management</CardTitle>
           <CardDescription>
             Download a backup of your data or restore from a previous backup. This is useful for transferring data between devices.
-          </-CardDescription>
+          </CardDescription>
         </CardHeader>
         <CardContent>
           <DataManagement />
