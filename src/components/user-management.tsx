@@ -15,16 +15,20 @@ import {
 } from '@/components/ui/dropdown-menu';
 import { Badge } from './ui/badge';
 import { useToast } from '@/hooks/use-toast';
+import EditUserModal from './edit-user-modal';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
-interface User {
+export interface User {
   id: number;
   email: string;
   business_name: string | null;
+  business_address: string | null;
   shop_type: string | null;
-  status: 'Active' | 'Inactive'; // Assuming status is handled client-side or needs a new backend field
-  role: 'Admin' | 'User'; // Assuming role is handled client-side or needs a new backend field
+  rc_number: string | null;
+  phone_number: string | null;
+  status: 'Active' | 'Inactive'; 
+  role: 'Admin' | 'User'; 
   plan: 'Premium' | 'Freemium';
 }
 
@@ -40,36 +44,38 @@ async function safeJsonParse(response: Response) {
 export default function UserManagement() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { toast } = useToast();
 
-  useEffect(() => {
-    const fetchUsers = async () => {
-      setLoading(true);
-      try {
-        const token = sessionStorage.getItem('user-token');
-        const response = await fetch(`${API_BASE_URL}/api/users.php?action=read_all`, {
-          headers: { 'Authorization': `Bearer ${token}` }
-        });
-        const data = await safeJsonParse(response);
-        if (!response.ok) throw new Error(data.message || 'Failed to fetch users');
-        
-        // Add static status/role for demonstration as backend doesn't provide it
-        const usersWithDetails = (data.users || []).map((user: any) => ({
-          ...user,
-          status: user.id % 2 === 0 ? 'Inactive' : 'Active', // Mock status
-          role: user.id === 1 ? 'Admin' : 'User', // Mock role, assuming user 1 is admin
-          plan: user.id % 3 === 0 ? 'Freemium' : 'Premium', // Mock plan
-        }));
-        setUsers(usersWithDetails);
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const token = sessionStorage.getItem('user-token');
+      const response = await fetch(`${API_BASE_URL}/api/users.php?action=read_all`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await safeJsonParse(response);
+      if (!response.ok) throw new Error(data.message || 'Failed to fetch users');
+      
+      const usersWithDetails = (data.users || []).map((user: any) => ({
+        ...user,
+        status: user.id % 2 === 0 ? 'Inactive' : 'Active', // Mock status
+        role: user.id === 1 ? 'Admin' : 'User', // Mock role, assuming user 1 is admin
+        plan: user.id % 3 === 0 ? 'Freemium' : 'Premium', // Mock plan
+      }));
+      setUsers(usersWithDetails);
 
-      } catch (error: any) {
-        toast({ variant: 'destructive', title: 'Error fetching users', description: error.message });
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (error: any) {
+      toast({ variant: 'destructive', title: 'Error fetching users', description: error.message });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchUsers();
-  }, [toast]);
+  }, []);
 
 
   const handleDeleteUser = (id: number) => {
@@ -82,17 +88,20 @@ export default function UserManagement() {
   };
 
   const handleMakeAdmin = (id: number) => {
-     // API call to update role would go here
     setUsers(users.map(u => u.id === id ? { ...u, role: 'Admin' } : u));
   };
   
   const handleRevokeAdmin = (id: number) => {
-     // API call to update role would go here
     setUsers(users.map(u => u.id === id ? { ...u, role: 'User' } : u));
   };
 
+  const handleEditUser = (user: User) => {
+    setSelectedUser(user);
+    setIsModalOpen(true);
+  };
+
   return (
-    <div>
+    <>
       <div className="mb-4">
         <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
         <p className="text-muted-foreground">View and manage all registered users in the system.</p>
@@ -151,7 +160,7 @@ export default function UserManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
-                        <DropdownMenuItem onClick={() => alert('Edit functionality not implemented.')}>
+                        <DropdownMenuItem onClick={() => handleEditUser(user)}>
                           <Edit className="mr-2 h-4 w-4" />
                           <span>Edit User</span>
                         </DropdownMenuItem>
@@ -188,6 +197,17 @@ export default function UserManagement() {
           </Table>
         </CardContent>
       </Card>
-    </div>
+      {selectedUser && (
+        <EditUserModal
+            isOpen={isModalOpen}
+            onClose={() => {
+                setIsModalOpen(false);
+                setSelectedUser(null);
+            }}
+            user={selectedUser}
+            onUserUpdate={fetchUsers}
+        />
+      )}
+    </>
   );
 }

@@ -1,4 +1,5 @@
 
+
 # PHP Backend Guide for RetailLab
 
 This guide provides the necessary PHP code and database setup to create the authentication and business logic backend for your RetailLab application.
@@ -650,7 +651,9 @@ if ($method == 'GET') {
     $action = $_GET['action'] ?? null;
     if ($action == 'read_all') {
         // This should be an admin-only action in a real app
-        $sql = "SELECT u.id, u.email, bd.business_name, bd.shop_type FROM users u LEFT JOIN business_details bd ON u.id = bd.user_id";
+        $sql = "SELECT u.id, u.email, bd.business_name, bd.business_address, bd.shop_type, bd.rc_number, bd.phone_number 
+                FROM users u 
+                LEFT JOIN business_details bd ON u.id = bd.user_id";
         if($stmt = mysqli_prepare($link, $sql)){
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
@@ -695,6 +698,14 @@ function create_barcode_obj($value, $width = 150, $height = 60, $align = 1) {
     return $obj;
 }
 
+// Function to create an image object
+function create_image_obj($base64_img, $align = 1) {
+    $obj = new stdClass();
+    $obj->type = 1; // Image type
+    $obj->content = $base64_img;
+    $obj->align = $align;
+    return $obj;
+}
 
 $sale_id_str = $_GET['saleId'] ?? null;
 if (!$sale_id_str) {
@@ -738,6 +749,12 @@ mysqli_stmt_bind_param($stmt_items, "i", $sale_id);
 mysqli_stmt_execute($stmt_items);
 $result_items = mysqli_stmt_get_result($stmt_items);
 $items = mysqli_fetch_all($result_items, MYSQLI_ASSOC);
+
+if (!$items) {
+     http_response_code(404);
+     echo json_encode(["message" => "No items found for this sale"]);
+     exit();
+}
 $sale['items'] = $items;
 
 // --- Build the JSON response for the printer ---
@@ -746,8 +763,14 @@ $print_payload = array();
 $business_name = $sale['business_name'] ?? 'N/A';
 $sale_date = new DateTime($sale['date']);
 
+// You would replace this with your actual logo's Base64 string
+// For now, it's a placeholder 1x1 pixel black dot.
+$logo_base64 = "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII="; 
+
 // Header
-array_push($print_payload, create_print_obj($business_name, 0, 1, 1, 2));
+array_push($print_payload, create_image_obj($logo_base64));
+array_push($print_payload, create_print_obj('SAJ FOODS', 0, 1, 1, 2));
+array_push($print_payload, create_print_obj($business_name, 0, 1, 1, 1));
 array_push($print_payload, create_print_obj($sale['business_address'] ?? 'Your Business Address', 0, 0, 1));
 if (!empty($sale['rc_number'])) {
     array_push($print_payload, create_print_obj('RC: ' . $sale['rc_number'], 0, 0, 1));
@@ -785,7 +808,7 @@ array_push($print_payload, create_print_obj(' ', 0, 0, 0)); // Empty line
 array_push($print_payload, create_barcode_obj(strval($sale_id)));
 
 // Final output
-echo json_encode($print_payload, JSON_FORCE_OBJECT);
+echo json_encode($print_payload, JSON_UNESCAPED_SLASHES);
 
 mysqli_close($link);
 ?>
@@ -794,3 +817,5 @@ mysqli_close($link);
 
 
     
+
+```
