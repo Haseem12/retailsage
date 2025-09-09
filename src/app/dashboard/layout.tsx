@@ -74,6 +74,7 @@ const mobileNavItems = [
   { href: '/dashboard/inventory', label: 'Inventory', icon: BookOpen },
   { href: '/dashboard/sales-history', label: 'History', icon: BarChart2 },
   { href: '/dashboard/sales-summary', label: 'Summary', icon: DollarSign },
+  { href: '/dashboard/reports/daily-sales', label: 'Reports', icon: FileText },
 ]
 
 export default function DashboardLayout({
@@ -218,7 +219,7 @@ export default function DashboardLayout({
 
          {isMobile && (
           <div className="fixed bottom-0 left-0 right-0 bg-card border-t z-50 md:hidden">
-            <div className="grid grid-cols-5">
+            <div className="grid grid-cols-6">
               {mobileNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
