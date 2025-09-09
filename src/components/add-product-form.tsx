@@ -10,7 +10,6 @@ import { Loader2, Wand2 } from 'lucide-react';
 import { suggestProductDetails } from '@/ai/flows/suggest-product-details';
 import { useToast } from '@/hooks/use-toast';
 import Barcode from 'react-barcode';
-import RcPasswordDialog from './rc-password-dialog';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
@@ -33,7 +32,6 @@ export default function AddProductForm() {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSuggesting, setIsSuggesting] = useState(false);
-  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   
   const router = useRouter();
   const { toast } = useToast();
@@ -79,7 +77,7 @@ export default function AddProductForm() {
     }
   };
 
-  const handleFormSubmit = () => {
+  const handleAddProduct = async () => {
      if (!name || !price || !stock || !category || !barcode) {
       toast({
         variant: 'destructive',
@@ -88,10 +86,6 @@ export default function AddProductForm() {
       });
       return;
     }
-    setIsPasswordDialogOpen(true);
-  }
-
-  const handleAddProduct = async () => {
     setIsLoading(true);
     try {
       const token = sessionStorage.getItem('user-token');
@@ -137,7 +131,6 @@ export default function AddProductForm() {
   };
 
   return (
-    <>
     <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Product Name</Label>
@@ -181,16 +174,10 @@ export default function AddProductForm() {
            <Button variant="ghost" onClick={() => router.push('/dashboard/inventory')}>
                 Cancel
             </Button>
-            <Button onClick={handleFormSubmit} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
+            <Button onClick={handleAddProduct} disabled={isLoading} className="bg-green-600 hover:bg-green-700">
               {isLoading ? <Loader2 className="animate-spin" /> : 'Save Product'}
             </Button>
         </div>
       </div>
-      <RcPasswordDialog 
-        isOpen={isPasswordDialogOpen}
-        onClose={() => setIsPasswordDialogOpen(false)}
-        onConfirm={handleAddProduct}
-      />
-    </>
   );
 }

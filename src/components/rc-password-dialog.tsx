@@ -20,9 +20,17 @@ interface RcPasswordDialogProps {
   isOpen: boolean;
   onClose: () => void;
   onConfirm: () => void;
+  title?: string;
+  description?: string;
 }
 
-export default function RcPasswordDialog({ isOpen, onClose, onConfirm }: RcPasswordDialogProps) {
+export default function RcPasswordDialog({ 
+  isOpen, 
+  onClose, 
+  onConfirm,
+  title = "Confirm Action",
+  description = "For security, please enter your business RC Number to authorize this change."
+}: RcPasswordDialogProps) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
@@ -45,7 +53,6 @@ export default function RcPasswordDialog({ isOpen, onClose, onConfirm }: RcPassw
     if (password === storedRcNumber) {
       toast({
         title: 'Authorization Successful',
-        description: 'Proceeding with the action.',
       });
       onConfirm();
       onClose();
@@ -71,9 +78,9 @@ export default function RcPasswordDialog({ isOpen, onClose, onConfirm }: RcPassw
     <Dialog open={isOpen} onOpenChange={handleOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Confirm Action</DialogTitle>
+          <DialogTitle>{title}</DialogTitle>
           <DialogDescription>
-            For security, please enter your business RC Number to authorize this change.
+            {description}
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">

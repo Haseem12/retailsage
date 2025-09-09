@@ -8,7 +8,6 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { type Product } from '@/lib/types';
 import { PlusCircle, MoreHorizontal, Edit, Trash2, Printer, Loader2 } from 'lucide-react';
-import Link from 'next/link';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,6 +16,7 @@ import {
 } from '@/components/ui/dropdown-menu';
 import ProductLabelModal from './product-label-modal';
 import { useToast } from '@/hooks/use-toast';
+import RcPasswordDialog from './rc-password-dialog';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
@@ -39,6 +39,10 @@ export default function InventoryManagement() {
   // State for Label Printing
   const [isLabelModalOpen, setIsLabelModalOpen] = useState(false);
   const [productForLabel, setProductForLabel] = useState<Product | null>(null);
+
+  // State for RC Password Dialog
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
+  const [nextAction, setNextAction] = useState<(() => void) | null>(null);
 
   const fetchProducts = async () => {
     setLoading(true);
@@ -83,6 +87,18 @@ export default function InventoryManagement() {
     fetchProducts();
   }, [toast]);
   
+  const requestAuthorization = (action: () => void) => {
+    setNextAction(() => action);
+    setIsPasswordDialogOpen(true);
+  };
+
+  const handleAddClick = () => {
+    requestAuthorization(() => router.push('/dashboard/inventory/add'));
+  };
+
+  const handleEditClick = (productId: number) => {
+    requestAuthorization(() => router.push(`/dashboard/inventory/edit/${productId}`));
+  };
 
   const handleDeleteProduct = async (id: number) => {
     if (confirm('Are you sure you want to delete this product?')) {
@@ -125,7 +141,7 @@ export default function InventoryManagement() {
           <CardTitle>Inventory Management</CardTitle>
           <CardDescription>View, add, and manage your product stock.</CardDescription>
         </div>
-        <Button onClick={() => router.push('/dashboard/inventory/add')}>
+        <Button onClick={handleAddClick}>
           <PlusCircle className="mr-2" />
           Add Product
         </Button>
@@ -165,11 +181,9 @@ export default function InventoryManagement() {
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">
-                           <DropdownMenuItem asChild>
-                            <Link href={`/dashboard/inventory/edit/${product.id}`}>
-                              <Edit className="mr-2 h-4 w-4" />
-                              <span>Edit / Add Stock</span>
-                            </Link>
+                           <DropdownMenuItem onClick={() => handleEditClick(product.id)}>
+                            <Edit className="mr-2 h-4 w-4" />
+                            <span>Edit / Add Stock</span>
                           </DropdownMenuItem>
                           <DropdownMenuItem onClick={() => openLabelDialog(product)}>
                             <Printer className="mr-2 h-4 w-4" />
@@ -206,6 +220,13 @@ export default function InventoryManagement() {
         product={productForLabel}
       />
     )}
+     <RcPasswordDialog 
+        isOpen={isPasswordDialogOpen}
+        onClose={() => setIsPasswordDialogOpen(false)}
+        onConfirm={nextAction!}
+        title="Authorization Required"
+        description="Please enter the manager's RC number to access this page."
+      />
     </>
   );
 }
