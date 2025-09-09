@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import type { Product } from '@/lib/types';
 import { Skeleton } from './ui/skeleton';
+import RcPasswordDialog from './rc-password-dialog';
 
 const API_BASE_URL = 'https://sagheerplus.com.ng/retaillab';
 
@@ -31,6 +32,7 @@ export default function EditProductForm({ productId }: { productId: string }) {
   
   const [isLoading, setIsLoading] = useState(false);
   const [isFetching, setIsFetching] = useState(true);
+  const [isPasswordDialogOpen, setIsPasswordDialogOpen] = useState(false);
   
   const router = useRouter();
   const { toast } = useToast();
@@ -83,7 +85,7 @@ export default function EditProductForm({ productId }: { productId: string }) {
     fetchProduct();
   }, [productId, router, toast]);
 
-  const handleUpdateProduct = async () => {
+  const handleFormSubmit = () => {
     if (!name || !price) {
       toast({
         variant: 'destructive',
@@ -92,6 +94,10 @@ export default function EditProductForm({ productId }: { productId: string }) {
       });
       return;
     }
+    setIsPasswordDialogOpen(true);
+  }
+
+  const handleUpdateProduct = async () => {
     setIsLoading(true);
 
     try {
@@ -152,6 +158,7 @@ export default function EditProductForm({ productId }: { productId: string }) {
   }
 
   return (
+    <>
     <div className="space-y-6">
         <div className="space-y-2">
           <Label htmlFor="name">Product Name</Label>
@@ -178,10 +185,16 @@ export default function EditProductForm({ productId }: { productId: string }) {
            <Button variant="ghost" onClick={() => router.push('/dashboard/inventory')}>
                 Cancel
             </Button>
-            <Button onClick={handleUpdateProduct} disabled={isLoading} className="bg-yellow-600 hover:bg-yellow-700">
+            <Button onClick={handleFormSubmit} disabled={isLoading} className="bg-yellow-600 hover:bg-yellow-700">
               {isLoading ? <Loader2 className="animate-spin" /> : 'Save Changes'}
             </Button>
         </div>
       </div>
+      <RcPasswordDialog 
+        isOpen={isPasswordDialogOpen}
+        onClose={() => setIsPasswordDialogOpen(false)}
+        onConfirm={handleUpdateProduct}
+      />
+    </>
   );
 }
