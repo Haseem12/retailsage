@@ -28,8 +28,8 @@ export default function RcPasswordDialog({
   isOpen, 
   onClose, 
   onConfirm,
-  title = "Confirm Action",
-  description = "For security, please enter your business RC Number to authorize this change."
+  title = "Authorization Required",
+  description = "For security, please enter the access code to proceed."
 }: RcPasswordDialogProps) {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -43,7 +43,7 @@ export default function RcPasswordDialog({
       toast({
         variant: 'destructive',
         title: 'Authorization Failed',
-        description: 'No RC Number found. Please set one in your business details.',
+        description: 'No access code found. Please set one in your business details.',
       });
       setIsLoading(false);
       onClose();
@@ -60,7 +60,7 @@ export default function RcPasswordDialog({
       toast({
         variant: 'destructive',
         title: 'Authorization Failed',
-        description: 'The RC Number entered is incorrect.',
+        description: 'The access code entered is incorrect.',
       });
     }
     setPassword('');
@@ -85,13 +85,13 @@ export default function RcPasswordDialog({
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="space-y-2">
-            <Label htmlFor="rc-password">RC Number</Label>
+            <Label htmlFor="rc-password">Access Code</Label>
             <Input
               id="rc-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Enter your RC Number"
+              placeholder="Enter access code"
             />
           </div>
         </div>

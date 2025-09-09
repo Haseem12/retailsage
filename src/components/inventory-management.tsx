@@ -225,7 +225,7 @@ export default function InventoryManagement() {
         onClose={() => setIsPasswordDialogOpen(false)}
         onConfirm={nextAction!}
         title="Authorization Required"
-        description="Please enter the manager's RC number to access this page."
+        description="Please enter the manager's access code to view this page."
       />
     </>
   );
