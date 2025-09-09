@@ -163,10 +163,7 @@ export default function EditProductForm({ productId }: { productId: string }) {
                 <Label htmlFor="price">Price (₦)</Label>
                 <Input id="price" type="number" value={price} onChange={e => setPrice(e.target.value)} />
             </div>
-            <div className="space-y-2">
-                <Label htmlFor="current-stock">Current Stock</Label>
-                <Input id="current-stock" type="number" value={currentStock} onChange={e => setCurrentStock(e.target.value)} />
-            </div>
+           
         </div>
         
         <div className="space-y-2">
